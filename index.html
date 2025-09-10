@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pedidos - Detalles Laurel Medellín</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-gift"></i>
+            <h1>Detalles Laurel Medellín</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="alertas-container">
+            <div class="alertas-header">
+                <i class="fas fa-exclamation-circle fa-2x"></i>
+                <h2>Alertas de Entrega</h2>
+            </div>
+            <div id="alertasLista">
+                <!-- Las alertas se cargarán dinámicamente con JS -->
+            </div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por cliente, destinatario, producto, dirección, teléfono...">
+                <button id="clearSearch" class="clear-search" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="todos">
+                <i class="fas fa-list"></i> Todos los Pedidos
+                <span class="notification" id="countTodos">0</span>
+            </button>
+            <button class="filter-btn" data-filter="pendiente">
+                <i class="fas fa-clock"></i> Pendientes
+                <span class="notification" id="countPendiente">0</span>
+            </button>
+            <button class="filter-btn" data-filter="entregado">
+                <i class="fas fa-check-circle"></i> Entregados
+                <span class="notification" id="countEntregado">0</span>
+            </button>
+            <button id="btnNuevoPedido" class="filter-btn">
+                <i class="fas fa-plus"></i> Nuevo Pedido
+            </button>
+        </div>
+
+        <div class="pedidos-grid" id="pedidosGrid">
+            <!-- Los pedidos se cargarán dinámicamente con JS -->
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar pedido -->
+    <div class="modal" id="pedidoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Nuevo Pedido</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="pedidoForm">
+                <input type="hidden" id="pedidoId">
+                
+                <div class="form-group">
+                    <label for="clienteNombre">Nombre del cliente *</label>
+                    <input type="text" id="clienteNombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="clienteTelefono">Teléfono del cliente *</label>
+                    <input type="tel" id="clienteTelefono" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="destinatarioNombre">Nombre del destinatario *</label>
+                    <input type="text" id="destinatarioNombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="destinatarioTelefono">Teléfono del destinatario *</label>
+                    <input type="tel" id="destinatarioTelefono" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="direccion">Dirección de entrega *</label>
+                    <input type="text" id="direccion" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="barrio">Barrio o ciudad de entrega *</label>
+                    <input type="text" id="barrio" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="referencia">Punto de referencia</label>
+                    <input type="text" id="referencia">
+                </div>
+                
+                <div class="form-group">
+                    <label for="producto">Producto seleccionado *</label>
+                    <input type="text" id="producto" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="caracteristicas">Características del producto</label>
+                    <textarea id="caracteristicas"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="precio">Precio producto *</label>
+                    <input type="number" id="precio" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="estadoPago">Estado del pago *</label>
+                    <select id="estadoPago" required>
+                        <option value="pendiente">Pendiente por pago</option>
+                        <option value="abono">Con abono</option>
+                        <option value="pagado">Pagado</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="abonoGroup" style="display: none;">
+                    <label for="montoAbono">Monto del abono</label>
+                    <input type="number" id="montoAbono" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ocasion">Ocasión del detalle</label>
+                    <input type="text" id="ocasion">
+                </div>
+                
+                <div class="form-group">
+                    <label for="frase">Frase de la tarjeta de entrega</label>
+                    <textarea id="frase"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="estado">Estado del pedido *</label>
+                    <select id="estado" required>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="domiciliario">Con Domiciliario</option>
+                        <option value="entregado">Entregado</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fechaEntrega">Fecha de entrega *</label>
+                    <input type="datetime-local" id="fechaEntrega" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Guardar Pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles del pedido -->
+    <div class="modal" id="detallesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detallesTitulo">Detalles del Pedido</h2>
+                <span class="close" id="closeDetalles">&times;</span>
+            </div>
+            <div id="detallesContenido">
+                <!-- El contenido se cargará dinámicamente con JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
