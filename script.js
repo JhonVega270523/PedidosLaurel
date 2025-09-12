@@ -343,7 +343,18 @@ function renderPedidos() {
 
     // Agregar event listeners a los botones de cambiar estado
     document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
+        // Usar tanto click como touchstart para mejor compatibilidad móvil
         button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(e.currentTarget.dataset.id);
+            cambiarEstadoPedido(id);
+        });
+        
+        // Agregar evento touchstart para dispositivos táctiles
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const id = parseInt(e.currentTarget.dataset.id);
             cambiarEstadoPedido(id);
         });
@@ -399,7 +410,8 @@ function formatFecha(fecha) {
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: true
     });
 }
 
@@ -533,6 +545,16 @@ function guardarPedido(e) {
 function cambiarEstadoPedido(id) {
     const pedido = pedidos.find(p => p.id === id);
     if (!pedido) return;
+    
+    // Encontrar el botón que fue presionado para dar feedback visual
+    const button = document.querySelector(`.btn-cambiar-estado[data-id="${id}"]`);
+    if (button) {
+        // Agregar clase de feedback visual
+        button.classList.add('btn-pressed');
+        setTimeout(() => {
+            button.classList.remove('btn-pressed');
+        }, 200);
+    }
     
     let nuevoEstado;
     switch(pedido.estado) {
@@ -813,5 +835,76 @@ function verificarAlertas() {
     });
 }
 
+// Función para manejar el scroll to top
+function initScrollToTop() {
+    const scrollToTopBtn = document.getElementById('scrollToTop');
+    
+    // Función para verificar si hay un modal abierto
+    function isModalOpen() {
+        const modals = document.querySelectorAll('.modal');
+        for (let modal of modals) {
+            if (modal.style.display === 'flex' || modal.style.display === 'block') {
+                return modal;
+            }
+        }
+        return null;
+    }
+    
+    // Función para mostrar/ocultar el botón
+    function updateButtonVisibility() {
+        const openModal = isModalOpen();
+        
+        if (openModal) {
+            // Si hay un modal abierto, verificar scroll del modal
+            const modalContent = openModal.querySelector('.modal-content');
+            if (modalContent && modalContent.scrollTop > 100) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        } else {
+            // Si no hay modal, verificar scroll de la página
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        }
+    }
+    
+    // Event listener para scroll de la ventana
+    window.addEventListener('scroll', updateButtonVisibility);
+    
+    // Event listeners para scroll de modales
+    document.querySelectorAll('.modal .modal-content').forEach(modalContent => {
+        modalContent.addEventListener('scroll', updateButtonVisibility);
+    });
+    
+    // Manejar el clic del botón
+    scrollToTopBtn.addEventListener('click', () => {
+        const openModal = isModalOpen();
+        
+        if (openModal) {
+            // Si hay un modal abierto, hacer scroll del modal
+            const modalContent = openModal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        } else {
+            // Si no hay modal, hacer scroll de la página
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    });
+}
+
 // Inicializar la aplicación cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initScrollToTop();
+});

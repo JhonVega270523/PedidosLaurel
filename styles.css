@@ -343,8 +343,8 @@ header {
 
 .card-footer {
     padding: 10px 12px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: center;
     gap: 6px;
     border-top: 1px solid #eee;
 }
@@ -352,19 +352,20 @@ header {
 .btn {
     padding: 8px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
-    font-size: 0.7rem;
-    min-height: 32px;
-    min-width: 32px;
+    font-size: 0.8rem;
+    height: 36px;
+    width: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0px;
     text-align: center;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .btn-primary {
@@ -653,7 +654,7 @@ header {
 
 .confirmar-botones {
     display: flex;
-    gap: 12px;
+    gap: 6px;
     justify-content: center;
     padding: 12px 20px;
     border-top: 1px solid #eee;
@@ -662,11 +663,11 @@ header {
 }
 
 .confirmar-botones .btn {
-    min-width: 50px;
-    min-height: 50px;
-    padding: 12px;
+    width: 50px;
+    height: 50px;
+    padding: 10px;
     font-size: 1.2rem;
-    flex: 1;
+    flex-shrink: 0;
 }
 
 /* Estilos para enlaces de Google Maps */
@@ -846,16 +847,29 @@ header {
     }
     
     .card-footer {
-        grid-template-columns: 1fr;
         gap: 4px;
         padding: 8px 10px;
     }
     
     .btn {
-        padding: 6px;
-        font-size: 0.65rem;
-        min-height: 28px;
-        min-width: 28px;
+        padding: 8px;
+        font-size: 0.75rem;
+        height: 34px;
+        width: 34px;
+    }
+    
+    /* Mejorar área de toque para botones en móvil */
+    .btn-cambiar-estado {
+        height: 36px;
+        width: 36px;
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+    
+    /* Feedback visual para botón presionado */
+    .btn-pressed {
+        transform: scale(0.95);
+        background-color: #c0392b !important;
     }
     
     .modal {
@@ -941,17 +955,17 @@ header {
     
     .confirmar-botones {
         flex-direction: row;
-        gap: 12px;
+        gap: 6px;
         padding: 12px 20px;
         margin-top: 0px;
     }
     
     .confirmar-botones .btn {
-        min-width: 45px;
-        min-height: 45px;
-        flex: 1;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
         padding: 10px;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 }
 
@@ -1092,15 +1106,29 @@ header {
     
     .card-footer {
         padding: 8px 10px;
-        gap: 4px;
+        gap: 3px;
     }
     
     .btn {
-        padding: 5px;
-        font-size: 0.6rem;
-        min-height: 26px;
-        min-width: 26px;
-        border-radius: 3px;
+        padding: 6px;
+        font-size: 0.7rem;
+        height: 32px;
+        width: 32px;
+        border-radius: 5px;
+    }
+    
+    /* Mejorar área de toque para botones en móviles pequeños */
+    .btn-cambiar-estado {
+        height: 34px;
+        width: 34px;
+        padding: 6px;
+        font-size: 0.75rem;
+    }
+    
+    /* Feedback visual para botón presionado en móviles pequeños */
+    .btn-pressed {
+        transform: scale(0.95);
+        background-color: #c0392b !important;
     }
     
     .modal {
@@ -1149,16 +1177,17 @@ header {
     }
     
     .confirmar-botones {
-        gap: 12px;
+        gap: 4px;
         padding: 12px 20px;
         margin-top: 0px;
     }
     
     .confirmar-botones .btn {
-        min-width: 40px;
-        min-height: 40px;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
         padding: 8px;
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
     
     .modal-header {
@@ -1221,6 +1250,46 @@ header {
     }
 }
 
+/* Scroll to top button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--dark-pink);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    z-index: 1000;
+}
+
+.scroll-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+    background-color: #e04a9e;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-to-top:active {
+    transform: translateY(-1px);
+}
+
 /* Pantallas muy pequeñas */
 @media (max-width: 360px) {
     .logo h1 {
@@ -1233,9 +1302,17 @@ header {
     }
     
     .btn {
-        font-size: 0.6rem;
-        padding: 4px;
-        min-height: 24px;
-        min-width: 24px;
+        font-size: 0.65rem;
+        padding: 6px;
+        height: 28px;
+        width: 28px;
+    }
+    
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
     }
 }
