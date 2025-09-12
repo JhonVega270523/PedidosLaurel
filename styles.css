@@ -37,6 +37,19 @@ button, .btn, .filter-btn, .clear-search, .close {
     .pedido-card:active {
         transform: scale(0.99);
     }
+    
+    /* Mejorar respuesta táctil para botón de cambiar estado */
+    .btn-cambiar-estado {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    
+    .btn-cambiar-estado:active {
+        transform: scale(0.95) !important;
+        background-color: #c0392b !important;
+    }
 }
 
 html {
@@ -402,6 +415,16 @@ header {
 
 .btn-info:hover {
     background-color: #2980b9;
+}
+
+/* Botón de guardar pedido - más grande para mostrar texto completo */
+.btn-primary[type="submit"] {
+    width: auto;
+    min-width: 120px;
+    height: 44px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .modal {
@@ -866,6 +889,15 @@ header {
         font-size: 0.8rem;
     }
     
+    /* Botón de guardar pedido en móvil */
+    .btn-primary[type="submit"] {
+        width: auto;
+        min-width: 140px;
+        height: 48px;
+        padding: 14px 24px;
+        font-size: 1rem;
+    }
+    
     /* Feedback visual para botón presionado */
     .btn-pressed {
         transform: scale(0.95);
@@ -1125,6 +1157,15 @@ header {
         font-size: 0.75rem;
     }
     
+    /* Botón de guardar pedido en móviles pequeños */
+    .btn-primary[type="submit"] {
+        width: auto;
+        min-width: 130px;
+        height: 44px;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
     /* Feedback visual para botón presionado en móviles pequeños */
     .btn-pressed {
         transform: scale(0.95);
@@ -1306,6 +1347,15 @@ header {
         padding: 6px;
         height: 28px;
         width: 28px;
+    }
+    
+    /* Botón de guardar pedido en pantallas muy pequeñas */
+    .btn-primary[type="submit"] {
+        width: auto;
+        min-width: 120px;
+        height: 40px;
+        padding: 10px 18px;
+        font-size: 0.85rem;
     }
     
     .scroll-to-top {

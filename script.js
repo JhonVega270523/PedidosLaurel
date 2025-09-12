@@ -343,20 +343,37 @@ function renderPedidos() {
 
     // Agregar event listeners a los botones de cambiar estado
     document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
-        // Usar tanto click como touchstart para mejor compatibilidad móvil
-        button.addEventListener('click', (e) => {
+        console.log('Agregando event listeners al botón:', button.dataset.id); // Debug
+        
+        // Función para manejar el cambio de estado
+        const handleStateChange = (e) => {
+            console.log('Evento detectado:', e.type, 'en botón:', button.dataset.id); // Debug
             e.preventDefault();
             e.stopPropagation();
-            const id = parseInt(e.currentTarget.dataset.id);
-            cambiarEstadoPedido(id);
+            e.stopImmediatePropagation();
+            
+            const id = parseInt(button.dataset.id);
+            if (id && !isNaN(id)) {
+                cambiarEstadoPedido(id);
+            }
+        };
+        
+        // Agregar múltiples eventos para mejor compatibilidad móvil
+        button.addEventListener('click', handleStateChange, { passive: false });
+        button.addEventListener('touchend', handleStateChange, { passive: false });
+        
+        // Agregar feedback visual inmediato
+        button.addEventListener('touchstart', (e) => {
+            console.log('Touch start en botón:', button.dataset.id); // Debug
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
         });
         
-        // Agregar evento touchstart para dispositivos táctiles
-        button.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const id = parseInt(e.currentTarget.dataset.id);
-            cambiarEstadoPedido(id);
+        button.addEventListener('touchend', () => {
+            setTimeout(() => {
+                button.style.transform = '';
+                button.style.opacity = '';
+            }, 150);
         });
     });
 
@@ -543,8 +560,15 @@ function guardarPedido(e) {
 
 // Cambiar estado del pedido
 function cambiarEstadoPedido(id) {
+    console.log('Cambiando estado del pedido:', id); // Debug
+    
     const pedido = pedidos.find(p => p.id === id);
-    if (!pedido) return;
+    if (!pedido) {
+        console.log('Pedido no encontrado:', id);
+        return;
+    }
+    
+    console.log('Estado actual:', pedido.estado); // Debug
     
     // Encontrar el botón que fue presionado para dar feedback visual
     const button = document.querySelector(`.btn-cambiar-estado[data-id="${id}"]`);
@@ -568,6 +592,8 @@ function cambiarEstadoPedido(id) {
             nuevoEstado = 'pendiente';
     }
     
+    console.log('Nuevo estado:', nuevoEstado); // Debug
+    
     // Cambiar estado directamente sin confirmación
     pedido.estado = nuevoEstado;
     
@@ -578,6 +604,10 @@ function cambiarEstadoPedido(id) {
     actualizarContadores();
     renderPedidos();
     verificarAlertas();
+    
+    // Mostrar mensaje de confirmación
+    const estadoTexto = nuevoEstado === 'entregado' ? 'Entregado' : 'Pendiente';
+    console.log(`Pedido #${id} marcado como: ${estadoTexto}`);
 }
 
 // Eliminar pedido - mostrar modal de confirmación
