@@ -140,7 +140,7 @@ function configurarEventListeners() {
         detallesModal.style.display = 'none';
     });
 
-    // Guardar pedido - simplificado
+    // Guardar pedido - con soporte mejorado para Chrome móvil
     pedidoForm.addEventListener('submit', (e) => {
         console.log('Evento submit detectado en formulario');
         e.preventDefault();
@@ -148,6 +148,25 @@ function configurarEventListeners() {
         console.log('Formulario enviado');
         guardarPedido(e);
     });
+    
+    // Event listener adicional para el botón de guardar en Chrome móvil
+    const submitButton = pedidoForm.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.addEventListener('touchend', (e) => {
+            console.log('Touch end en botón guardar pedido');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Validar formulario antes de enviar
+            if (pedidoForm.checkValidity()) {
+                console.log('Formulario válido, guardando pedido');
+                guardarPedido(e);
+            } else {
+                console.log('Formulario inválido, mostrando errores');
+                pedidoForm.reportValidity();
+            }
+        }, { passive: false });
+    }
 
     // Búsqueda
     searchInput.addEventListener('input', (e) => {
@@ -355,8 +374,9 @@ function renderPedidos() {
         pedidosGrid.appendChild(pedidoCard);
     });
 
-    // Agregar event listeners simples como en desktop
+    // Agregar event listeners con soporte mejorado para Chrome móvil
     document.querySelectorAll('.btn-editar').forEach(button => {
+        // Event listener principal
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -364,9 +384,19 @@ function renderPedidos() {
             console.log('Editando pedido:', id);
             abrirModalEditarPedido(id);
         });
+        
+        // Event listener específico para touch en Chrome móvil
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Touch end - Editando pedido:', id);
+            abrirModalEditarPedido(id);
+        }, { passive: false });
     });
 
     document.querySelectorAll('.btn-eliminar').forEach(button => {
+        // Event listener principal
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -374,9 +404,19 @@ function renderPedidos() {
             console.log('Eliminando pedido:', id);
             eliminarPedido(id);
         });
+        
+        // Event listener específico para touch en Chrome móvil
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Touch end - Eliminando pedido:', id);
+            eliminarPedido(id);
+        }, { passive: false });
     });
 
     document.querySelectorAll('.btn-detalles').forEach(button => {
+        // Event listener principal
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -384,9 +424,19 @@ function renderPedidos() {
             console.log('Viendo detalles del pedido:', id);
             mostrarDetallesPedido(id);
         });
+        
+        // Event listener específico para touch en Chrome móvil
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Touch end - Viendo detalles del pedido:', id);
+            mostrarDetallesPedido(id);
+        }, { passive: false });
     });
 
     document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
+        // Event listener principal
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -394,6 +444,15 @@ function renderPedidos() {
             console.log('Cambiando estado del pedido:', id);
             cambiarEstadoPedido(id);
         });
+        
+        // Event listener específico para touch en Chrome móvil
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Touch end - Cambiando estado del pedido:', id);
+            cambiarEstadoPedido(id);
+        }, { passive: false });
     });
 }
 
@@ -949,12 +1008,51 @@ function initScrollToTop() {
     });
 }
 
+// Función para detectar Chrome móvil
+function isChromeMobile() {
+    const userAgent = navigator.userAgent;
+    return /Chrome/.test(userAgent) && /Mobile/.test(userAgent);
+}
+
+// Función para mejorar la compatibilidad con Chrome móvil
+function setupChromeMobileCompatibility() {
+    if (isChromeMobile()) {
+        console.log('Chrome móvil detectado, aplicando mejoras de compatibilidad');
+        
+        // Agregar clase CSS específica para Chrome móvil
+        document.body.classList.add('chrome-mobile');
+        
+        // Mejorar el manejo de eventos táctiles
+        document.addEventListener('touchstart', function(e) {
+            // Prevenir zoom en doble toque
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Mejorar el manejo de eventos de formulario
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                // Permitir que los inputs funcionen normalmente
+                return;
+            }
+            
+            // Para otros elementos, prevenir comportamientos por defecto problemáticos
+            if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+}
+
 // Inicializar la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM cargado, inicializando aplicación');
     console.log('Dispositivo táctil detectado:', 'ontouchstart' in window);
     console.log('User agent:', navigator.userAgent);
+    console.log('Chrome móvil detectado:', isChromeMobile());
     
+    setupChromeMobileCompatibility();
     init();
     initScrollToTop();
     

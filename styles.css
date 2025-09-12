@@ -22,6 +22,12 @@
 button, .btn, .filter-btn, .clear-search, .close {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* Mejorar la accesibilidad táctil */
@@ -50,6 +56,74 @@ button, .btn, .filter-btn, .clear-search, .close {
         transform: scale(0.95) !important;
         background-color: #c0392b !important;
     }
+    
+    /* Estilos específicos para Chrome móvil */
+    .btn, .btn-primary, .btn-secondary, .btn-danger, .btn-info {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+    }
+    
+    /* Mejorar área de toque para botones en Chrome móvil */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Botón de guardar pedido específico para Chrome móvil */
+    .btn-primary[type="submit"] {
+        min-height: 48px;
+        min-width: 120px;
+        -webkit-tap-highlight-color: rgba(255, 192, 203, 0.3);
+    }
+}
+
+/* Estilos específicos para Chrome móvil */
+.chrome-mobile .btn {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1) !important;
+    touch-action: manipulation !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    cursor: pointer !important;
+}
+
+.chrome-mobile .btn-primary[type="submit"] {
+    -webkit-tap-highlight-color: rgba(255, 192, 203, 0.3) !important;
+    min-height: 48px !important;
+    min-width: 120px !important;
+}
+
+.chrome-mobile .btn-cambiar-estado {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1) !important;
+    touch-action: manipulation !important;
+}
+
+.chrome-mobile .btn:active {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease !important;
+}
+
+.chrome-mobile .btn-primary:active {
+    background-color: #e04a9e !important;
+}
+
+.chrome-mobile .btn-secondary:active {
+    background-color: #ff9dbb !important;
+}
+
+.chrome-mobile .btn-danger:active {
+    background-color: #c0392b !important;
+}
+
+.chrome-mobile .btn-info:active {
+    background-color: #2980b9 !important;
 }
 
 html {
