@@ -128,7 +128,11 @@ function configurarEventListeners() {
     });
 
     // Guardar pedido
-    pedidoForm.addEventListener('submit', guardarPedido);
+    pedidoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log('Formulario enviado');
+        guardarPedido(e);
+    });
 
     // Búsqueda
     searchInput.addEventListener('input', (e) => {
@@ -183,35 +187,23 @@ function configurarEventListeners() {
         }
     });
     
-    // Delegación de eventos para botones de cambiar estado (más robusta)
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-cambiar-estado')) {
-            const button = e.target.closest('.btn-cambiar-estado');
-            const id = parseInt(button.dataset.id);
-            console.log('Delegación de eventos - click en botón:', id); // Debug
-            
-            if (id && !isNaN(id)) {
-                e.preventDefault();
-                e.stopPropagation();
-                cambiarEstadoPedido(id);
+    // Delegación de eventos para botones de cambiar estado (solo para móvil)
+    if ('ontouchstart' in window) {
+        // Solo en dispositivos táctiles
+        document.addEventListener('touchend', (e) => {
+            if (e.target.closest('.btn-cambiar-estado')) {
+                const button = e.target.closest('.btn-cambiar-estado');
+                const id = parseInt(button.dataset.id);
+                console.log('Delegación de eventos - touchend en botón:', id); // Debug
+                
+                if (id && !isNaN(id)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    cambiarEstadoPedido(id);
+                }
             }
-        }
-    });
-    
-    // Delegación de eventos para touch
-    document.addEventListener('touchend', (e) => {
-        if (e.target.closest('.btn-cambiar-estado')) {
-            const button = e.target.closest('.btn-cambiar-estado');
-            const id = parseInt(button.dataset.id);
-            console.log('Delegación de eventos - touchend en botón:', id); // Debug
-            
-            if (id && !isNaN(id)) {
-                e.preventDefault();
-                e.stopPropagation();
-                cambiarEstadoPedido(id);
-            }
-        }
-    });
+        });
+    }
 }
 
 // Actualizar contadores de pedidos
@@ -345,16 +337,16 @@ function renderPedidos() {
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-info btn-detalles" data-id="${pedido.id}">
+                <button class="btn btn-info btn-detalles" data-id="${pedido.id}" onclick="mostrarDetallesPedido(${pedido.id})">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn btn-secondary btn-editar" data-id="${pedido.id}">
+                <button class="btn btn-secondary btn-editar" data-id="${pedido.id}" onclick="abrirModalEditarPedido(${pedido.id})">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}" onclick="cambiarEstadoPedido(${pedido.id})">
                     <i class="fas fa-exchange-alt"></i>
                 </button>
-                <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}">
+                <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}" onclick="eliminarPedido(${pedido.id})">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -366,78 +358,21 @@ function renderPedidos() {
     // Agregar event listeners a los botones de editar
     document.querySelectorAll('.btn-editar').forEach(button => {
         button.addEventListener('click', (e) => {
-            const id = parseInt(e.currentTarget.dataset.id);
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Editando pedido:', id);
             abrirModalEditarPedido(id);
         });
-    });
-
-    // Agregar event listeners a los botones de cambiar estado
-    document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
-        console.log('Agregando event listeners al botón:', button.dataset.id); // Debug
-        
-        // Función para manejar el cambio de estado
-        const handleStateChange = (e) => {
-            console.log('Evento detectado:', e.type, 'en botón:', button.dataset.id); // Debug
-            
-            // Prevenir comportamiento por defecto
-            if (e.preventDefault) e.preventDefault();
-            if (e.stopPropagation) e.stopPropagation();
-            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-            
-            const id = parseInt(button.dataset.id);
-            console.log('ID extraído:', id); // Debug
-            
-            if (id && !isNaN(id)) {
-                console.log('Llamando a cambiarEstadoPedido con ID:', id); // Debug
-                cambiarEstadoPedido(id);
-            } else {
-                console.log('ID inválido:', id); // Debug
-            }
-            
-            return false;
-        };
-        
-        // Limpiar event listeners anteriores si existen
-        button.removeEventListener('click', handleStateChange);
-        button.removeEventListener('touchend', handleStateChange);
-        button.removeEventListener('touchstart', handleStateChange);
-        
-        // Agregar eventos con diferentes configuraciones
-        button.addEventListener('click', handleStateChange, { 
-            passive: false, 
-            capture: true 
-        });
-        
-        button.addEventListener('touchend', handleStateChange, { 
-            passive: false, 
-            capture: true 
-        });
-        
-        // También agregar mousedown para dispositivos híbridos
-        button.addEventListener('mousedown', handleStateChange, { 
-            passive: false, 
-            capture: true 
-        });
-        
-        // Feedback visual
-        button.addEventListener('touchstart', (e) => {
-            console.log('Touch start en botón:', button.dataset.id); // Debug
-            button.style.transform = 'scale(0.95)';
-            button.style.opacity = '0.8';
-        }, { passive: true });
-        
-        button.addEventListener('touchend', () => {
-            setTimeout(() => {
-                button.style.transform = '';
-                button.style.opacity = '';
-            }, 150);
-        }, { passive: true });
     });
 
     // Agregar event listeners a los botones de eliminar
     document.querySelectorAll('.btn-eliminar').forEach(button => {
         button.addEventListener('click', (e) => {
-            const id = parseInt(e.currentTarget.dataset.id);
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Eliminando pedido:', id);
             eliminarPedido(id);
         });
     });
@@ -445,9 +380,41 @@ function renderPedidos() {
     // Agregar event listeners a los botones de ver detalles
     document.querySelectorAll('.btn-detalles').forEach(button => {
         button.addEventListener('click', (e) => {
-            const id = parseInt(e.currentTarget.dataset.id);
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Viendo detalles del pedido:', id);
             mostrarDetallesPedido(id);
         });
+    });
+
+    // Agregar event listeners específicos para botones de cambiar estado (desktop)
+    document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
+        console.log('Configurando botón de cambiar estado:', button.dataset.id); // Debug
+        
+        // Limpiar event listeners anteriores si existen
+        if (button._handleStateChangeClick) {
+            button.removeEventListener('click', button._handleStateChangeClick);
+        }
+        
+        // Función específica para click
+        const handleStateChangeClick = (e) => {
+            console.log('Evento click detectado en botón:', button.dataset.id); // Debug
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Click en botón cambiar estado (desktop):', id);
+            cambiarEstadoPedido(id);
+        };
+        
+        // Agregar event listener con capture para asegurar que se ejecute
+        button.addEventListener('click', handleStateChangeClick, { capture: true });
+        
+        // También agregar sin capture como respaldo
+        button.addEventListener('click', handleStateChangeClick, { capture: false });
+        
+        // Guardar referencia para poder limpiarla después
+        button._handleStateChangeClick = handleStateChangeClick;
     });
 }
 
@@ -560,6 +527,7 @@ function abrirModalEditarPedido(id) {
 
 // Guardar pedido (nuevo o editado)
 function guardarPedido(e) {
+    console.log('Función guardarPedido llamada');
     e.preventDefault();
     
     const id = document.getElementById('pedidoId').value;
@@ -601,7 +569,9 @@ function guardarPedido(e) {
     }
     
     // Guardar en localStorage
+    console.log('Guardando pedidos en localStorage:', pedidos.length, 'pedidos');
     localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    console.log('Pedidos guardados exitosamente en localStorage');
     
     // Actualizar interfaz
     actualizarContadores();
@@ -615,9 +585,15 @@ function guardarPedido(e) {
     alert(`Pedido ${esEdicion ? 'actualizado' : 'creado'} correctamente.`);
 }
 
+// Hacer funciones globales para onclick
+window.mostrarDetallesPedido = mostrarDetallesPedido;
+window.abrirModalEditarPedido = abrirModalEditarPedido;
+window.eliminarPedido = eliminarPedido;
+
 // Cambiar estado del pedido (función global para onclick)
 window.cambiarEstadoPedido = function(id) {
     console.log('Cambiando estado del pedido:', id); // Debug
+    console.log('Dispositivo táctil:', 'ontouchstart' in window); // Debug
     
     const pedido = pedidos.find(p => p.id === id);
     if (!pedido) {
@@ -655,7 +631,9 @@ window.cambiarEstadoPedido = function(id) {
     pedido.estado = nuevoEstado;
     
     // Guardar en localStorage
+    console.log('Guardando cambio de estado en localStorage');
     localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    console.log('Estado guardado exitosamente en localStorage');
     
     // Actualizar interfaz
     actualizarContadores();
@@ -669,8 +647,12 @@ window.cambiarEstadoPedido = function(id) {
 
 // Eliminar pedido - mostrar modal de confirmación
 function eliminarPedido(id) {
+    console.log('Función eliminarPedido llamada con ID:', id);
     const pedido = pedidos.find(p => p.id === id);
-    if (!pedido) return;
+    if (!pedido) {
+        console.log('Pedido no encontrado para eliminar:', id);
+        return;
+    }
     
     // Guardar el ID del pedido a eliminar
     pedidoAEliminar = id;
@@ -685,7 +667,9 @@ function eliminarPedidoConfirmado(id) {
     pedidos = pedidos.filter(p => p.id !== id);
     
     // Guardar en localStorage
+    console.log('Guardando eliminación en localStorage');
     localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    console.log('Eliminación guardada exitosamente en localStorage');
     
     // Actualizar interfaz
     actualizarContadores();
