@@ -182,6 +182,36 @@ function configurarEventListeners() {
             pedidoAEliminar = null;
         }
     });
+    
+    // Delegación de eventos para botones de cambiar estado (más robusta)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-cambiar-estado')) {
+            const button = e.target.closest('.btn-cambiar-estado');
+            const id = parseInt(button.dataset.id);
+            console.log('Delegación de eventos - click en botón:', id); // Debug
+            
+            if (id && !isNaN(id)) {
+                e.preventDefault();
+                e.stopPropagation();
+                cambiarEstadoPedido(id);
+            }
+        }
+    });
+    
+    // Delegación de eventos para touch
+    document.addEventListener('touchend', (e) => {
+        if (e.target.closest('.btn-cambiar-estado')) {
+            const button = e.target.closest('.btn-cambiar-estado');
+            const id = parseInt(button.dataset.id);
+            console.log('Delegación de eventos - touchend en botón:', id); // Debug
+            
+            if (id && !isNaN(id)) {
+                e.preventDefault();
+                e.stopPropagation();
+                cambiarEstadoPedido(id);
+            }
+        }
+    });
 }
 
 // Actualizar contadores de pedidos
@@ -321,7 +351,7 @@ function renderPedidos() {
                 <button class="btn btn-secondary btn-editar" data-id="${pedido.id}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}">
+                <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}" onclick="cambiarEstadoPedido(${pedido.id})">
                     <i class="fas fa-exchange-alt"></i>
                 </button>
                 <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}">
@@ -348,33 +378,60 @@ function renderPedidos() {
         // Función para manejar el cambio de estado
         const handleStateChange = (e) => {
             console.log('Evento detectado:', e.type, 'en botón:', button.dataset.id); // Debug
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+            
+            // Prevenir comportamiento por defecto
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
             
             const id = parseInt(button.dataset.id);
+            console.log('ID extraído:', id); // Debug
+            
             if (id && !isNaN(id)) {
+                console.log('Llamando a cambiarEstadoPedido con ID:', id); // Debug
                 cambiarEstadoPedido(id);
+            } else {
+                console.log('ID inválido:', id); // Debug
             }
+            
+            return false;
         };
         
-        // Agregar múltiples eventos para mejor compatibilidad móvil
-        button.addEventListener('click', handleStateChange, { passive: false });
-        button.addEventListener('touchend', handleStateChange, { passive: false });
+        // Limpiar event listeners anteriores si existen
+        button.removeEventListener('click', handleStateChange);
+        button.removeEventListener('touchend', handleStateChange);
+        button.removeEventListener('touchstart', handleStateChange);
         
-        // Agregar feedback visual inmediato
+        // Agregar eventos con diferentes configuraciones
+        button.addEventListener('click', handleStateChange, { 
+            passive: false, 
+            capture: true 
+        });
+        
+        button.addEventListener('touchend', handleStateChange, { 
+            passive: false, 
+            capture: true 
+        });
+        
+        // También agregar mousedown para dispositivos híbridos
+        button.addEventListener('mousedown', handleStateChange, { 
+            passive: false, 
+            capture: true 
+        });
+        
+        // Feedback visual
         button.addEventListener('touchstart', (e) => {
             console.log('Touch start en botón:', button.dataset.id); // Debug
             button.style.transform = 'scale(0.95)';
             button.style.opacity = '0.8';
-        });
+        }, { passive: true });
         
         button.addEventListener('touchend', () => {
             setTimeout(() => {
                 button.style.transform = '';
                 button.style.opacity = '';
             }, 150);
-        });
+        }, { passive: true });
     });
 
     // Agregar event listeners a los botones de eliminar
@@ -558,8 +615,8 @@ function guardarPedido(e) {
     alert(`Pedido ${esEdicion ? 'actualizado' : 'creado'} correctamente.`);
 }
 
-// Cambiar estado del pedido
-function cambiarEstadoPedido(id) {
+// Cambiar estado del pedido (función global para onclick)
+window.cambiarEstadoPedido = function(id) {
     console.log('Cambiando estado del pedido:', id); // Debug
     
     const pedido = pedidos.find(p => p.id === id);
@@ -608,7 +665,7 @@ function cambiarEstadoPedido(id) {
     // Mostrar mensaje de confirmación
     const estadoTexto = nuevoEstado === 'entregado' ? 'Entregado' : 'Pendiente';
     console.log(`Pedido #${id} marcado como: ${estadoTexto}`);
-}
+};
 
 // Eliminar pedido - mostrar modal de confirmación
 function eliminarPedido(id) {
