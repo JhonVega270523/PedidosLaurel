@@ -105,7 +105,9 @@ function configurarEventListeners() {
     // Filtros
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
+            console.log('Click en filtro:', button.id); // Debug
             if (button.id === 'btnNuevoPedido') {
+                console.log('Abriendo modal nuevo pedido'); // Debug
                 abrirModalNuevoPedido();
                 return;
             }
@@ -116,6 +118,17 @@ function configurarEventListeners() {
             renderPedidos();
         });
     });
+    
+    // Event listener adicional para el botón de nuevo pedido (móvil)
+    const btnNuevoPedido = document.getElementById('btnNuevoPedido');
+    if (btnNuevoPedido) {
+        btnNuevoPedido.addEventListener('touchend', (e) => {
+            console.log('Touch end en botón nuevo pedido'); // Debug
+            e.preventDefault();
+            e.stopPropagation();
+            abrirModalNuevoPedido();
+        }, { passive: false });
+    }
 
     // Cerrar modal
     closeModal.addEventListener('click', () => {
@@ -129,10 +142,24 @@ function configurarEventListeners() {
 
     // Guardar pedido
     pedidoForm.addEventListener('submit', (e) => {
+        console.log('Evento submit detectado en formulario');
         e.preventDefault();
+        e.stopPropagation();
         console.log('Formulario enviado');
         guardarPedido(e);
     });
+    
+    // También agregar event listener para el botón de guardar específicamente
+    const btnGuardar = pedidoForm.querySelector('button[type="submit"]');
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', (e) => {
+            console.log('Click en botón guardar detectado');
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Botón guardar presionado');
+            guardarPedido(e);
+        });
+    }
 
     // Búsqueda
     searchInput.addEventListener('input', (e) => {
@@ -189,19 +216,23 @@ function configurarEventListeners() {
     
     // Delegación de eventos para botones de cambiar estado (solo para móvil)
     if ('ontouchstart' in window) {
-        // Solo en dispositivos táctiles
-        document.addEventListener('touchend', (e) => {
-            if (e.target.closest('.btn-cambiar-estado')) {
-                const button = e.target.closest('.btn-cambiar-estado');
-                const id = parseInt(button.dataset.id);
-                console.log('Delegación de eventos - touchend en botón:', id); // Debug
-                
-                if (id && !isNaN(id)) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cambiarEstadoPedido(id);
+        console.log('Configurando delegación de eventos para móvil'); // Debug
+        
+        // Múltiples eventos táctiles
+        ['touchend', 'click'].forEach(eventType => {
+            document.addEventListener(eventType, (e) => {
+                if (e.target.closest('.btn-cambiar-estado')) {
+                    const button = e.target.closest('.btn-cambiar-estado');
+                    const id = parseInt(button.dataset.id);
+                    console.log(`Delegación de eventos - ${eventType} en botón:`, id); // Debug
+                    
+                    if (id && !isNaN(id)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        cambiarEstadoPedido(id);
+                    }
                 }
-            }
+            }, { passive: false });
         });
     }
 }
@@ -589,6 +620,7 @@ function guardarPedido(e) {
 window.mostrarDetallesPedido = mostrarDetallesPedido;
 window.abrirModalEditarPedido = abrirModalEditarPedido;
 window.eliminarPedido = eliminarPedido;
+window.guardarPedido = guardarPedido;
 
 // Cambiar estado del pedido (función global para onclick)
 window.cambiarEstadoPedido = function(id) {
@@ -976,6 +1008,22 @@ function initScrollToTop() {
 
 // Inicializar la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM cargado, inicializando aplicación');
+    console.log('Dispositivo táctil detectado:', 'ontouchstart' in window);
+    console.log('User agent:', navigator.userAgent);
+    
     init();
     initScrollToTop();
+    
+    // Debug adicional para móvil
+    if ('ontouchstart' in window) {
+        console.log('Configuración móvil activada');
+        
+        // Verificar que los elementos críticos existen
+        const pedidoForm = document.getElementById('pedidoForm');
+        const pedidosGrid = document.getElementById('pedidosGrid');
+        
+        console.log('Formulario encontrado:', !!pedidoForm);
+        console.log('Grid de pedidos encontrado:', !!pedidosGrid);
+    }
 });
