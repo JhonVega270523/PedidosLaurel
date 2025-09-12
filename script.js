@@ -337,16 +337,16 @@ function renderPedidos() {
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-info btn-detalles" data-id="${pedido.id}" onclick="mostrarDetallesPedido(${pedido.id})">
+                <button class="btn btn-info btn-detalles" data-id="${pedido.id}">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn btn-secondary btn-editar" data-id="${pedido.id}" onclick="abrirModalEditarPedido(${pedido.id})">
+                <button class="btn btn-secondary btn-editar" data-id="${pedido.id}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}" onclick="cambiarEstadoPedido(${pedido.id})">
+                <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}">
                     <i class="fas fa-exchange-alt"></i>
                 </button>
-                <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}" onclick="eliminarPedido(${pedido.id})">
+                <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -355,8 +355,46 @@ function renderPedidos() {
         pedidosGrid.appendChild(pedidoCard);
     });
 
-    // Los botones ahora usan onclick directo, no necesitamos event listeners adicionales
-    console.log('Botones configurados con onclick directo');
+    // Agregar event listeners simples como en desktop
+    document.querySelectorAll('.btn-editar').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Editando pedido:', id);
+            abrirModalEditarPedido(id);
+        });
+    });
+
+    document.querySelectorAll('.btn-eliminar').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Eliminando pedido:', id);
+            eliminarPedido(id);
+        });
+    });
+
+    document.querySelectorAll('.btn-detalles').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Viendo detalles del pedido:', id);
+            mostrarDetallesPedido(id);
+        });
+    });
+
+    document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Cambiando estado del pedido:', id);
+            cambiarEstadoPedido(id);
+        });
+    });
 }
 
 // Obtener texto del estado
@@ -468,12 +506,8 @@ function abrirModalEditarPedido(id) {
 
 // Guardar pedido (nuevo o editado)
 function guardarPedido(e) {
-    console.log('=== FUNCIÓN GUARDAR PEDIDO INICIADA ===');
-    console.log('Evento recibido:', e);
-    
-    if (e && e.preventDefault) {
-        e.preventDefault();
-    }
+    console.log('Función guardarPedido llamada');
+    e.preventDefault();
     
     const id = document.getElementById('pedidoId').value;
     const esEdicion = id !== '';
@@ -530,18 +564,11 @@ function guardarPedido(e) {
     alert(`Pedido ${esEdicion ? 'actualizado' : 'creado'} correctamente.`);
 }
 
-// Hacer funciones globales para onclick
-window.mostrarDetallesPedido = mostrarDetallesPedido;
-window.abrirModalEditarPedido = abrirModalEditarPedido;
-window.eliminarPedido = eliminarPedido;
-window.guardarPedido = guardarPedido;
+// Las funciones están disponibles localmente, no necesitamos hacerlas globales
 
-// Cambiar estado del pedido (función global para onclick)
-window.cambiarEstadoPedido = function(id) {
-    console.log('=== FUNCIÓN CAMBIAR ESTADO INICIADA ===');
-    console.log('ID recibido:', id);
-    console.log('Tipo de ID:', typeof id);
-    console.log('Dispositivo táctil:', 'ontouchstart' in window);
+// Cambiar estado del pedido
+function cambiarEstadoPedido(id) {
+    console.log('Cambiando estado del pedido:', id);
     
     const pedido = pedidos.find(p => p.id === id);
     if (!pedido) {
@@ -591,7 +618,7 @@ window.cambiarEstadoPedido = function(id) {
     // Mostrar mensaje de confirmación
     const estadoTexto = nuevoEstado === 'entregado' ? 'Entregado' : 'Pendiente';
     console.log(`Pedido #${id} marcado como: ${estadoTexto}`);
-};
+}
 
 // Eliminar pedido - mostrar modal de confirmación
 function eliminarPedido(id) {
@@ -931,42 +958,5 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
     initScrollToTop();
     
-    // Debug adicional para móvil
-    if ('ontouchstart' in window) {
-        console.log('Configuración móvil activada');
-        
-        // Verificar que los elementos críticos existen
-        const pedidoForm = document.getElementById('pedidoForm');
-        const pedidosGrid = document.getElementById('pedidosGrid');
-        
-        console.log('Formulario encontrado:', !!pedidoForm);
-        console.log('Grid de pedidos encontrado:', !!pedidosGrid);
-        
-        // Verificar que las funciones están disponibles globalmente
-        console.log('guardarPedido disponible:', typeof window.guardarPedido);
-        console.log('cambiarEstadoPedido disponible:', typeof window.cambiarEstadoPedido);
-        console.log('eliminarPedido disponible:', typeof window.eliminarPedido);
-        console.log('abrirModalEditarPedido disponible:', typeof window.abrirModalEditarPedido);
-        console.log('mostrarDetallesPedido disponible:', typeof window.mostrarDetallesPedido);
-        
-        // Test manual de funciones
-        console.log('=== TEST MANUAL DE FUNCIONES ===');
-        console.log('Para probar cambiarEstadoPedido, ejecuta: window.cambiarEstadoPedido(1)');
-        console.log('Para probar guardarPedido, ejecuta: window.guardarPedido()');
-        
-        // Hacer las funciones disponibles en la consola para testing
-        window.testCambiarEstado = () => {
-            console.log('Test manual de cambiar estado');
-            if (pedidos.length > 0) {
-                cambiarEstadoPedido(pedidos[0].id);
-            } else {
-                console.log('No hay pedidos para probar');
-            }
-        };
-        
-        window.testGuardar = () => {
-            console.log('Test manual de guardar');
-            guardarPedido();
-        };
-    }
+    console.log('Aplicación inicializada correctamente');
 });
