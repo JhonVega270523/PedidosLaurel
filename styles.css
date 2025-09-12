@@ -184,11 +184,29 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.alerta-item.clickeable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.alerta-item.clickeable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff3e0;
 }
 
 .alerta-item.crítica {
     background-color: #ffe6e6;
     border-left: 4px solid #e74c3c;
+}
+
+.alerta-item.crítica.clickeable:hover {
+    background-color: #ffebee;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
 }
 
 .filters {
@@ -324,26 +342,27 @@ header {
 }
 
 .card-footer {
-    padding: 12px 15px;
+    padding: 10px 12px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
     border-top: 1px solid #eee;
 }
 
 .btn {
-    padding: 10px 12px;
+    padding: 8px;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
-    font-size: 0.8rem;
-    min-height: 40px;
+    font-size: 0.7rem;
+    min-height: 32px;
+    min-width: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 0px;
     text-align: center;
     white-space: nowrap;
 }
@@ -395,7 +414,8 @@ header {
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    padding: 10px;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-content {
@@ -403,9 +423,9 @@ header {
     border-radius: 10px;
     width: 100%;
     max-width: 600px;
-    max-height: 95vh;
+    max-height: 90vh;
     overflow-y: auto;
-    padding: 15px;
+    padding: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
     scroll-behavior: smooth;
     position: relative;
@@ -415,17 +435,17 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #eee;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 .modal-header h2 {
     color: var(--dark-pink);
     font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin: 0;
 }
 
@@ -487,47 +507,47 @@ header {
 
 /* Estilos para el modal de detalles */
 .detalles-section {
-    margin-bottom: 20px;
-    padding: 15px;
+    margin-bottom: 12px;
+    padding: 10px;
     background-color: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid var(--primary-pink);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-pink);
 }
 
 .detalles-section h3 {
     color: var(--dark-pink);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     font-family: 'Playfair Display', serif;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1.1rem;
+    gap: 6px;
+    font-size: 1rem;
 }
 
 .detalles-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 6px;
 }
 
 .detalle-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .detalle-item label {
     font-weight: 600;
     color: var(--dark-gray);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .detalle-item span {
     color: var(--text-color);
-    font-size: 0.9rem;
-    padding: 8px 10px;
+    font-size: 0.85rem;
+    padding: 6px 8px;
     background-color: white;
-    border-radius: 5px;
+    border-radius: 4px;
     border: 1px solid #e0e0e0;
     word-break: break-word;
 }
@@ -536,11 +556,12 @@ header {
     font-style: italic;
     background-color: #fff8e6 !important;
     border: 1px solid #f39c12 !important;
-    padding: 12px !important;
-    border-radius: 8px !important;
-    min-height: 60px;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    min-height: 40px;
     display: flex;
     align-items: center;
+    font-size: 0.85rem !important;
 }
 
 /* Estilos para estados de pago */
@@ -580,6 +601,72 @@ header {
 .porcentaje-pago {
     font-weight: 600;
     color: #1976d2;
+}
+
+/* Estilos para el modal de confirmación */
+.confirmar-modal {
+    width: auto;
+    max-width: 90vw;
+    min-width: 280px;
+    padding: 0;
+    margin: auto;
+}
+
+.confirmar-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 20px 0px 20px;
+}
+
+.confirmar-icon {
+    font-size: 2.5rem;
+    color: #f39c12;
+    margin-bottom: 12px;
+}
+
+.confirmar-mensaje h3 {
+    color: var(--dark-gray);
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.advertencia {
+    color: #e74c3c;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 6px;
+    margin-bottom: 0px;
+    padding: 8px 12px;
+    background-color: #ffeaea;
+    border-radius: 6px;
+    border: 1px solid #ffcdd2;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.confirmar-botones {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding: 12px 20px;
+    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+    margin-top: 0px;
+}
+
+.confirmar-botones .btn {
+    min-width: 50px;
+    min-height: 50px;
+    padding: 12px;
+    font-size: 1.2rem;
+    flex: 1;
 }
 
 /* Estilos para enlaces de Google Maps */
@@ -651,6 +738,14 @@ header {
     .filters {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
+    
+    .confirmar-modal {
+        max-width: 90vw;
+        min-width: 280px;
+        max-height: 90vh;
+        height: auto;
+        margin: auto;
+    }
 }
 
 /* Móviles grandes */
@@ -669,8 +764,39 @@ header {
     }
     
     .alertas-container {
-        padding: 15px;
-        margin-bottom: 20px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .alertas-header {
+        margin-bottom: 10px;
+    }
+    
+    .alertas-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .alertas-header i {
+        font-size: 1.5rem;
+    }
+    
+    .alerta-item {
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+    
+    .alerta-item i {
+        font-size: 0.9rem;
+    }
+    
+    .alerta-item.clickeable:hover {
+        transform: none;
+    }
+    
+    .alerta-item.crítica.clickeable:hover {
+        transform: none;
     }
     
     .search-container {
@@ -688,14 +814,29 @@ header {
     }
     
     .filters {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
         padding: 0 5px;
     }
     
     .filter-btn {
-        padding: 10px 15px;
-        font-size: 0.85rem;
+        padding: 8px 6px;
+        font-size: 0.7rem;
+        min-height: 40px;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .filter-btn i {
+        font-size: 0.8rem;
+    }
+    
+    .notification {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+        margin-left: 0;
+        margin-top: 2px;
     }
     
     .pedidos-grid {
@@ -706,26 +847,52 @@ header {
     
     .card-footer {
         grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 4px;
+        padding: 8px 10px;
     }
     
     .btn {
-        padding: 8px 10px;
-        font-size: 0.75rem;
-        min-height: 36px;
+        padding: 6px;
+        font-size: 0.65rem;
+        min-height: 28px;
+        min-width: 28px;
     }
     
     .modal {
-        padding: 5px;
+        padding: 15px;
     }
     
     .modal-content {
-        padding: 12px;
+        padding: 10px;
         max-height: 98vh;
     }
     
+    .modal-header {
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+    
     .modal-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+    }
+    
+    .detalles-section {
+        margin-bottom: 8px;
+        padding: 8px;
+    }
+    
+    .detalles-section h3 {
+        margin-bottom: 6px;
+        font-size: 0.95rem;
+    }
+    
+    .detalles-grid {
+        gap: 4px;
+    }
+    
+    .detalle-item span {
+        padding: 4px 6px;
+        font-size: 0.8rem;
     }
     
     .form-group input,
@@ -737,6 +904,54 @@ header {
     
     .detalles-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .confirmar-modal {
+        max-width: 85vw;
+        min-width: 280px;
+        max-height: 80vh;
+        height: auto;
+        margin: auto;
+        aspect-ratio: 1;
+        min-height: 300px;
+    }
+    
+    .confirmar-content {
+        padding: 20px 20px 0px 20px;
+    }
+    
+    .confirmar-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .confirmar-mensaje h3 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+    
+    .advertencia {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        margin-top: 6px;
+        margin-bottom: 0px;
+        gap: 6px;
+    }
+    
+    .confirmar-botones {
+        flex-direction: row;
+        gap: 12px;
+        padding: 12px 20px;
+        margin-top: 0px;
+    }
+    
+    .confirmar-botones .btn {
+        min-width: 45px;
+        min-height: 45px;
+        flex: 1;
+        padding: 10px;
+        font-size: 1.1rem;
     }
 }
 
@@ -763,9 +978,32 @@ header {
     }
     
     .alertas-container {
-        padding: 12px;
-        margin-bottom: 15px;
+        padding: 8px;
+        margin-bottom: 12px;
         border-radius: 8px;
+    }
+    
+    .alertas-header {
+        margin-bottom: 8px;
+    }
+    
+    .alertas-header h2 {
+        font-size: 1rem;
+    }
+    
+    .alertas-header i {
+        font-size: 1.3rem;
+    }
+    
+    .alerta-item {
+        padding: 5px 8px;
+        margin-bottom: 5px;
+        font-size: 0.75rem;
+        gap: 5px;
+    }
+    
+    .alerta-item i {
+        font-size: 0.8rem;
     }
     
     .search-box {
@@ -788,21 +1026,30 @@ header {
     }
     
     .filters {
-        gap: 8px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
         padding: 0;
     }
     
     .filter-btn {
-        padding: 8px 12px;
-        font-size: 0.8rem;
-        min-height: 44px;
-        border-radius: 20px;
+        padding: 6px 4px;
+        font-size: 0.65rem;
+        min-height: 36px;
+        border-radius: 15px;
+        flex-direction: column;
+        gap: 1px;
+    }
+    
+    .filter-btn i {
+        font-size: 0.7rem;
     }
     
     .notification {
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+        margin-left: 0;
+        margin-top: 1px;
     }
     
     .pedidos-grid {
@@ -844,19 +1091,20 @@ header {
     }
     
     .card-footer {
-        padding: 10px 12px;
-        gap: 5px;
+        padding: 8px 10px;
+        gap: 4px;
     }
     
     .btn {
-        padding: 6px 8px;
-        font-size: 0.7rem;
-        min-height: 32px;
-        border-radius: 4px;
+        padding: 5px;
+        font-size: 0.6rem;
+        min-height: 26px;
+        min-width: 26px;
+        border-radius: 3px;
     }
     
     .modal {
-        padding: 0;
+        padding: 10px;
     }
     
     .modal-content {
@@ -865,6 +1113,52 @@ header {
         max-height: 100vh;
         border-radius: 0;
         padding: 10px;
+    }
+    
+    .confirmar-modal {
+        max-width: 80vw;
+        min-width: 280px;
+        max-height: 70vh;
+        height: auto;
+        margin: auto;
+        aspect-ratio: 1;
+        min-height: 280px;
+    }
+    
+    .confirmar-content {
+        padding: 20px 20px 0px 20px;
+    }
+    
+    .confirmar-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .confirmar-mensaje h3 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+    
+    .advertencia {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        margin-top: 6px;
+        margin-bottom: 0px;
+        gap: 6px;
+    }
+    
+    .confirmar-botones {
+        gap: 12px;
+        padding: 12px 20px;
+        margin-top: 0px;
+    }
+    
+    .confirmar-botones .btn {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 8px;
+        font-size: 1rem;
     }
     
     .modal-header {
@@ -902,27 +1196,28 @@ header {
     }
     
     .detalles-section {
-        padding: 12px;
-        margin-bottom: 15px;
+        padding: 8px;
+        margin-bottom: 8px;
     }
     
     .detalles-section h3 {
-        font-size: 1rem;
-        margin-bottom: 10px;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
     }
     
     .detalle-item label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
     
     .detalle-item span {
-        font-size: 0.85rem;
-        padding: 6px 8px;
+        font-size: 0.8rem;
+        padding: 4px 6px;
     }
     
     .frase-texto {
-        padding: 8px !important;
-        min-height: 50px;
+        padding: 6px !important;
+        min-height: 35px;
+        font-size: 0.8rem !important;
     }
 }
 
@@ -938,7 +1233,9 @@ header {
     }
     
     .btn {
-        font-size: 0.65rem;
-        padding: 5px 6px;
+        font-size: 0.6rem;
+        padding: 4px;
+        min-height: 24px;
+        min-width: 24px;
     }
 }

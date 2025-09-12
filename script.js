@@ -83,10 +83,14 @@ const clearSearch = document.getElementById('clearSearch');
 const estadoPagoSelect = document.getElementById('estadoPago');
 const abonoGroup = document.getElementById('abonoGroup');
 const montoAbonoInput = document.getElementById('montoAbono');
+const confirmarEliminarModal = document.getElementById('confirmarEliminarModal');
+const cancelarEliminar = document.getElementById('cancelarEliminar');
+const confirmarEliminar = document.getElementById('confirmarEliminar');
 
 // Filtro actual y término de búsqueda
 let filtroActual = 'todos';
 let terminoBusqueda = '';
+let pedidoAEliminar = null;
 
 // Inicializar la aplicación
 function init() {
@@ -153,6 +157,18 @@ function configurarEventListeners() {
         }
     });
 
+    // Event listeners para el modal de confirmación de eliminación
+    cancelarEliminar.addEventListener('click', () => {
+        confirmarEliminarModal.style.display = 'none';
+        pedidoAEliminar = null;
+    });
+
+    confirmarEliminar.addEventListener('click', () => {
+        if (pedidoAEliminar) {
+            eliminarPedidoConfirmado(pedidoAEliminar);
+        }
+    });
+
     // Cerrar modal al hacer clic fuera
     window.addEventListener('click', (e) => {
         if (e.target === pedidoModal) {
@@ -160,6 +176,10 @@ function configurarEventListeners() {
         }
         if (e.target === detallesModal) {
             detallesModal.style.display = 'none';
+        }
+        if (e.target === confirmarEliminarModal) {
+            confirmarEliminarModal.style.display = 'none';
+            pedidoAEliminar = null;
         }
     });
 }
@@ -220,6 +240,13 @@ function renderPedidos() {
             buscarEnPedido(pedido, terminoBusqueda)
         );
     }
+
+    // Ordenar por fecha de entrega (más próxima primero)
+    pedidosFiltrados.sort((a, b) => {
+        const fechaA = new Date(a.fechaEntrega);
+        const fechaB = new Date(b.fechaEntrega);
+        return fechaA - fechaB; // Orden ascendente (más próxima primero)
+    });
 
     if (pedidosFiltrados.length === 0) {
         let mensaje = '';
@@ -289,16 +316,16 @@ function renderPedidos() {
             </div>
             <div class="card-footer">
                 <button class="btn btn-info btn-detalles" data-id="${pedido.id}">
-                    <i class="fas fa-eye"></i> Ver Detalles
+                    <i class="fas fa-eye"></i>
                 </button>
                 <button class="btn btn-secondary btn-editar" data-id="${pedido.id}">
-                    <i class="fas fa-edit"></i> Editar
+                    <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}">
-                    <i class="fas fa-exchange-alt"></i> Cambiar Estado
+                    <i class="fas fa-exchange-alt"></i>
                 </button>
                 <button class="btn btn-danger btn-eliminar" data-id="${pedido.id}">
-                    <i class="fas fa-trash"></i> Eliminar
+                    <i class="fas fa-trash"></i>
                 </button>
             </div>
         `;
@@ -519,42 +546,49 @@ function cambiarEstadoPedido(id) {
             nuevoEstado = 'pendiente';
     }
     
-    if (confirm(`¿Cambiar estado del pedido #${id} de ${getEstadoTexto(pedido.estado)} a ${getEstadoTexto(nuevoEstado)}?`)) {
-        pedido.estado = nuevoEstado;
-        
-        // Guardar en localStorage
-        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-        
-        // Actualizar interfaz
-        actualizarContadores();
-        renderPedidos();
-        verificarAlertas();
-        
-        alert(`Estado del pedido #${id} cambiado a ${getEstadoTexto(nuevoEstado)}.`);
-    }
+    // Cambiar estado directamente sin confirmación
+    pedido.estado = nuevoEstado;
+    
+    // Guardar en localStorage
+    localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    
+    // Actualizar interfaz
+    actualizarContadores();
+    renderPedidos();
+    verificarAlertas();
 }
 
-// Eliminar pedido
+// Eliminar pedido - mostrar modal de confirmación
 function eliminarPedido(id) {
     const pedido = pedidos.find(p => p.id === id);
     if (!pedido) return;
     
-    const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el pedido #${id}?\n\nCliente: ${pedido.clienteNombre}\nDestinatario: ${pedido.destinatarioNombre}\nProducto: ${pedido.producto}\n\nEsta acción no se puede deshacer.`);
+    // Guardar el ID del pedido a eliminar
+    pedidoAEliminar = id;
     
-    if (confirmacion) {
-        // Eliminar el pedido del array
-        pedidos = pedidos.filter(p => p.id !== id);
-        
-        // Guardar en localStorage
-        localStorage.setItem('pedidos', JSON.stringify(pedidos));
-        
-        // Actualizar interfaz
-        actualizarContadores();
-        renderPedidos();
-        verificarAlertas();
-        
-        alert(`Pedido #${id} eliminado correctamente.`);
-    }
+    // Mostrar el modal
+    confirmarEliminarModal.style.display = 'flex';
+}
+
+// Eliminar pedido confirmado
+function eliminarPedidoConfirmado(id) {
+    // Eliminar el pedido del array
+    pedidos = pedidos.filter(p => p.id !== id);
+    
+    // Guardar en localStorage
+    localStorage.setItem('pedidos', JSON.stringify(pedidos));
+    
+    // Actualizar interfaz
+    actualizarContadores();
+    renderPedidos();
+    verificarAlertas();
+    
+    // Cerrar modal
+    confirmarEliminarModal.style.display = 'none';
+    pedidoAEliminar = null;
+    
+    // Mostrar mensaje de éxito
+    alert(`Pedido #${id} eliminado correctamente.`);
 }
 
 // Mostrar detalles del pedido
@@ -732,19 +766,22 @@ function verificarAlertas() {
                 // Pedido atrasado
                 alertas.push({
                     tipo: 'crítica',
-                    mensaje: `¡Pedido #${pedido.id} está atrasado! Debería haberse entregado el ${formatFecha(fechaEntrega)}`
+                    mensaje: `¡Pedido #${pedido.id} está atrasado! Debería haberse entregado el ${formatFecha(fechaEntrega)}`,
+                    pedidoId: pedido.id
                 });
             } else if (diffHoras < 24) {
                 // Entrega en menos de 24 horas
                 alertas.push({
                     tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatFecha(fechaEntrega).split(' ')[1]}`
+                    mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatFecha(fechaEntrega).split(' ')[1]}`,
+                    pedidoId: pedido.id
                 });
             } else if (diffHoras < 48) {
                 // Entrega en menos de 48 horas
                 alertas.push({
                     tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse mañana a las ${formatFecha(fechaEntrega).split(' ')[1]}`
+                    mensaje: `Pedido #${pedido.id} debe entregarse mañana a las ${formatFecha(fechaEntrega).split(' ')[1]}`,
+                    pedidoId: pedido.id
                 });
             }
         }
@@ -761,11 +798,17 @@ function verificarAlertas() {
     
     alertas.forEach(alerta => {
         const alertaElement = document.createElement('div');
-        alertaElement.classList.add('alerta-item', alerta.tipo);
+        alertaElement.classList.add('alerta-item', alerta.tipo, 'clickeable');
         alertaElement.innerHTML = `
             <i class="fas ${alerta.tipo === 'crítica' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
             ${alerta.mensaje}
         `;
+        
+        // Agregar event listener para abrir detalles del pedido
+        alertaElement.addEventListener('click', () => {
+            mostrarDetallesPedido(alerta.pedidoId);
+        });
+        
         alertasLista.appendChild(alertaElement);
     });
 }

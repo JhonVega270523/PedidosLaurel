@@ -12,7 +12,7 @@
     <header>
         <div class="logo">
             <i class="fas fa-gift"></i>
-            <h1>Detalles Laurel Medellín</h1>
+            <h1>Pedidos Detalles Laurel Medellín</h1>
         </div>
     </header>
 
@@ -172,6 +172,28 @@
             </div>
             <div id="detallesContenido">
                 <!-- El contenido se cargará dinámicamente con JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar eliminación -->
+    <div class="modal" id="confirmarEliminarModal">
+        <div class="modal-content confirmar-modal">
+            <div class="confirmar-content">
+                <div class="confirmar-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="confirmar-mensaje">
+                    <h3>¿Estás seguro de que deseas eliminar este pedido?</h3>
+                </div>
+            </div>
+            <div class="confirmar-botones">
+                <button class="btn btn-secondary" id="cancelarEliminar">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="btn btn-danger" id="confirmarEliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     </div>
