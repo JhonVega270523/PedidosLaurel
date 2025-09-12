@@ -140,7 +140,7 @@ function configurarEventListeners() {
         detallesModal.style.display = 'none';
     });
 
-    // Guardar pedido
+    // Guardar pedido - simplificado
     pedidoForm.addEventListener('submit', (e) => {
         console.log('Evento submit detectado en formulario');
         e.preventDefault();
@@ -148,18 +148,6 @@ function configurarEventListeners() {
         console.log('Formulario enviado');
         guardarPedido(e);
     });
-    
-    // También agregar event listener para el botón de guardar específicamente
-    const btnGuardar = pedidoForm.querySelector('button[type="submit"]');
-    if (btnGuardar) {
-        btnGuardar.addEventListener('click', (e) => {
-            console.log('Click en botón guardar detectado');
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Botón guardar presionado');
-            guardarPedido(e);
-        });
-    }
 
     // Búsqueda
     searchInput.addEventListener('input', (e) => {
@@ -214,27 +202,8 @@ function configurarEventListeners() {
         }
     });
     
-    // Delegación de eventos para botones de cambiar estado (solo para móvil)
-    if ('ontouchstart' in window) {
-        console.log('Configurando delegación de eventos para móvil'); // Debug
-        
-        // Múltiples eventos táctiles
-        ['touchend', 'click'].forEach(eventType => {
-            document.addEventListener(eventType, (e) => {
-                if (e.target.closest('.btn-cambiar-estado')) {
-                    const button = e.target.closest('.btn-cambiar-estado');
-                    const id = parseInt(button.dataset.id);
-                    console.log(`Delegación de eventos - ${eventType} en botón:`, id); // Debug
-                    
-                    if (id && !isNaN(id)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        cambiarEstadoPedido(id);
-                    }
-                }
-            }, { passive: false });
-        });
-    }
+    // Delegación de eventos eliminada - usando solo onclick directo
+    console.log('Usando onclick directo para todos los botones');
 }
 
 // Actualizar contadores de pedidos
@@ -386,67 +355,8 @@ function renderPedidos() {
         pedidosGrid.appendChild(pedidoCard);
     });
 
-    // Agregar event listeners a los botones de editar
-    document.querySelectorAll('.btn-editar').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const id = parseInt(button.dataset.id);
-            console.log('Editando pedido:', id);
-            abrirModalEditarPedido(id);
-        });
-    });
-
-    // Agregar event listeners a los botones de eliminar
-    document.querySelectorAll('.btn-eliminar').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const id = parseInt(button.dataset.id);
-            console.log('Eliminando pedido:', id);
-            eliminarPedido(id);
-        });
-    });
-
-    // Agregar event listeners a los botones de ver detalles
-    document.querySelectorAll('.btn-detalles').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const id = parseInt(button.dataset.id);
-            console.log('Viendo detalles del pedido:', id);
-            mostrarDetallesPedido(id);
-        });
-    });
-
-    // Agregar event listeners específicos para botones de cambiar estado (desktop)
-    document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
-        console.log('Configurando botón de cambiar estado:', button.dataset.id); // Debug
-        
-        // Limpiar event listeners anteriores si existen
-        if (button._handleStateChangeClick) {
-            button.removeEventListener('click', button._handleStateChangeClick);
-        }
-        
-        // Función específica para click
-        const handleStateChangeClick = (e) => {
-            console.log('Evento click detectado en botón:', button.dataset.id); // Debug
-            e.preventDefault();
-            e.stopPropagation();
-            const id = parseInt(button.dataset.id);
-            console.log('Click en botón cambiar estado (desktop):', id);
-            cambiarEstadoPedido(id);
-        };
-        
-        // Agregar event listener con capture para asegurar que se ejecute
-        button.addEventListener('click', handleStateChangeClick, { capture: true });
-        
-        // También agregar sin capture como respaldo
-        button.addEventListener('click', handleStateChangeClick, { capture: false });
-        
-        // Guardar referencia para poder limpiarla después
-        button._handleStateChangeClick = handleStateChangeClick;
-    });
+    // Los botones ahora usan onclick directo, no necesitamos event listeners adicionales
+    console.log('Botones configurados con onclick directo');
 }
 
 // Obtener texto del estado
@@ -558,8 +468,12 @@ function abrirModalEditarPedido(id) {
 
 // Guardar pedido (nuevo o editado)
 function guardarPedido(e) {
-    console.log('Función guardarPedido llamada');
-    e.preventDefault();
+    console.log('=== FUNCIÓN GUARDAR PEDIDO INICIADA ===');
+    console.log('Evento recibido:', e);
+    
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
     
     const id = document.getElementById('pedidoId').value;
     const esEdicion = id !== '';
@@ -624,8 +538,10 @@ window.guardarPedido = guardarPedido;
 
 // Cambiar estado del pedido (función global para onclick)
 window.cambiarEstadoPedido = function(id) {
-    console.log('Cambiando estado del pedido:', id); // Debug
-    console.log('Dispositivo táctil:', 'ontouchstart' in window); // Debug
+    console.log('=== FUNCIÓN CAMBIAR ESTADO INICIADA ===');
+    console.log('ID recibido:', id);
+    console.log('Tipo de ID:', typeof id);
+    console.log('Dispositivo táctil:', 'ontouchstart' in window);
     
     const pedido = pedidos.find(p => p.id === id);
     if (!pedido) {
@@ -1025,5 +941,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('Formulario encontrado:', !!pedidoForm);
         console.log('Grid de pedidos encontrado:', !!pedidosGrid);
+        
+        // Verificar que las funciones están disponibles globalmente
+        console.log('guardarPedido disponible:', typeof window.guardarPedido);
+        console.log('cambiarEstadoPedido disponible:', typeof window.cambiarEstadoPedido);
+        console.log('eliminarPedido disponible:', typeof window.eliminarPedido);
+        console.log('abrirModalEditarPedido disponible:', typeof window.abrirModalEditarPedido);
+        console.log('mostrarDetallesPedido disponible:', typeof window.mostrarDetallesPedido);
+        
+        // Test manual de funciones
+        console.log('=== TEST MANUAL DE FUNCIONES ===');
+        console.log('Para probar cambiarEstadoPedido, ejecuta: window.cambiarEstadoPedido(1)');
+        console.log('Para probar guardarPedido, ejecuta: window.guardarPedido()');
+        
+        // Hacer las funciones disponibles en la consola para testing
+        window.testCambiarEstado = () => {
+            console.log('Test manual de cambiar estado');
+            if (pedidos.length > 0) {
+                cambiarEstadoPedido(pedidos[0].id);
+            } else {
+                console.log('No hay pedidos para probar');
+            }
+        };
+        
+        window.testGuardar = () => {
+            console.log('Test manual de guardar');
+            guardarPedido();
+        };
     }
 });
