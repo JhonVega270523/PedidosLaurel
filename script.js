@@ -109,11 +109,12 @@ function init() {
 function configurarEventListeners() {
     // Filtros - Mejorar compatibilidad móvil
     filterButtons.forEach(button => {
-        // Event listener principal
-        button.addEventListener('click', (e) => {
+        // Función unificada para manejar clics
+        const handleFilterClick = (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('Click en filtro:', button.id); // Debug
+            
             if (button.id === 'btnNuevoPedido') {
                 console.log('Abriendo modal nuevo pedido'); // Debug
                 abrirModalNuevoPedido();
@@ -124,64 +125,56 @@ function configurarEventListeners() {
             button.classList.add('active');
             filtroActual = button.dataset.filter;
             renderPedidos();
-        });
+        };
+        
+        // Event listener principal
+        button.addEventListener('click', handleFilterClick);
         
         // Event listener táctil para móvil
-        button.addEventListener('touchend', (e) => {
+        button.addEventListener('touchend', handleFilterClick, { passive: false });
+        
+        // Mejorar feedback visual en touchstart
+        button.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            console.log('Touch end en filtro:', button.id); // Debug
-            if (button.id === 'btnNuevoPedido') {
-                console.log('Touch end - Abriendo modal nuevo pedido'); // Debug
-                abrirModalNuevoPedido();
-                return;
-            }
-            
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            filtroActual = button.dataset.filter;
-            renderPedidos();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
         }, { passive: false });
     });
 
     // Cerrar modal - Mejorar compatibilidad móvil
-    closeModal.addEventListener('click', (e) => {
+    const handleCloseModal = (e) => {
         e.preventDefault();
         e.stopPropagation();
         pedidoModal.style.display = 'none';
-    });
+    };
     
-    closeModal.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        pedidoModal.style.display = 'none';
-    }, { passive: false });
+    closeModal.addEventListener('click', handleCloseModal);
+    closeModal.addEventListener('touchend', handleCloseModal, { passive: false });
 
     // Cerrar modal de detalles - Mejorar compatibilidad móvil
-    closeDetalles.addEventListener('click', (e) => {
+    const handleCloseDetalles = (e) => {
         e.preventDefault();
         e.stopPropagation();
         detallesModal.style.display = 'none';
-    });
+    };
     
-    closeDetalles.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        detallesModal.style.display = 'none';
-    }, { passive: false });
+    closeDetalles.addEventListener('click', handleCloseDetalles);
+    closeDetalles.addEventListener('touchend', handleCloseDetalles, { passive: false });
 
     // Cerrar modal de domiciliario - Mejorar compatibilidad móvil
-    closeDomiciliario.addEventListener('click', (e) => {
+    const handleCloseDomiciliario = (e) => {
         e.preventDefault();
         e.stopPropagation();
         domiciliarioModal.style.display = 'none';
-    });
+    };
     
-    closeDomiciliario.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        domiciliarioModal.style.display = 'none';
-    }, { passive: false });
+    closeDomiciliario.addEventListener('click', handleCloseDomiciliario);
+    closeDomiciliario.addEventListener('touchend', handleCloseDomiciliario, { passive: false });
 
     // Guardar pedido - con soporte mejorado para Chrome móvil
     pedidoForm.addEventListener('submit', (e) => {
@@ -1604,52 +1597,55 @@ function initScrollToTop() {
 // Función para detectar Chrome móvil
 function isChromeMobile() {
     const userAgent = navigator.userAgent;
-    return /Chrome/.test(userAgent) && /Mobile/.test(userAgent);
+    return /Chrome/.test(userAgent) && /Mobile/.test(userAgent) && !/Edge/.test(userAgent);
+}
+
+// Función para detectar dispositivos táctiles
+function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 // Función para mejorar la compatibilidad con Chrome móvil
 function setupChromeMobileCompatibility() {
-    if (isChromeMobile()) {
+    const isChrome = isChromeMobile();
+    const isTouch = isTouchDevice();
+    
+    if (isChrome) {
         console.log('Chrome móvil detectado, aplicando mejoras de compatibilidad');
-        
-        // Agregar clase CSS específica para Chrome móvil
         document.body.classList.add('chrome-mobile');
-        
-        // Mejorar el manejo de eventos táctiles
+    }
+    
+    if (isTouch) {
+        console.log('Dispositivo táctil detectado, aplicando mejoras de compatibilidad');
+        document.body.classList.add('touch-device');
+    }
+    
+    // Mejorar el manejo de eventos táctiles para todos los dispositivos móviles
+    if (isTouch) {
+        // Prevenir zoom en doble toque
         document.addEventListener('touchstart', function(e) {
-            // Prevenir zoom en doble toque
             if (e.touches.length > 1) {
                 e.preventDefault();
             }
         }, { passive: false });
         
-        // Mejorar el manejo de eventos de formulario
+        // Mejorar el manejo de botones
         document.addEventListener('touchstart', function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                // Permitir que los inputs funcionen normalmente
-                return;
-            }
-            
-            // Para otros elementos, prevenir comportamientos por defecto problemáticos
-            if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
+            const button = e.target.closest('button, .btn, .filter-btn');
+            if (button) {
                 e.preventDefault();
+                button.style.transform = 'scale(0.95)';
+                button.style.opacity = '0.8';
             }
         }, { passive: false });
         
-        // Mejorar el manejo de eventos táctiles en modales
-        document.addEventListener('touchstart', function(e) {
-            // Si el toque es en un input, textarea o select dentro de un modal, no prevenir
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                if (e.target.closest('.modal')) {
-                    return; // Permitir selección de texto en campos de modal
-                }
+        document.addEventListener('touchend', function(e) {
+            const button = e.target.closest('button, .btn, .filter-btn');
+            if (button) {
+                button.style.transform = 'scale(1)';
+                button.style.opacity = '1';
             }
-        }, { passive: true });
-    }
-    
-    // Aplicar mejoras para todos los dispositivos móviles
-    if ('ontouchstart' in window) {
-        console.log('Dispositivo táctil detectado, aplicando mejoras de compatibilidad');
+        }, { passive: false });
         
         // Mejorar el manejo de formularios en móvil
         document.addEventListener('touchstart', function(e) {
@@ -1670,6 +1666,21 @@ function setupChromeMobileCompatibility() {
             }
             lastTouchEnd = now;
         }, false);
+    }
+    
+    // Mejoras específicas para Chrome móvil
+    if (isChrome) {
+        // Mejorar el manejo de eventos de formulario
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                return; // Permitir que los inputs funcionen normalmente
+            }
+            
+            // Para otros elementos, prevenir comportamientos por defecto problemáticos
+            if (e.target.classList.contains('btn') || e.target.closest('.btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
 }
 
