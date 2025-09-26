@@ -354,13 +354,26 @@ function configurarManejoImagenes() {
     const btnSeleccionarArchivo = document.getElementById('btnSeleccionarArchivo');
     const btnTomarFoto = document.getElementById('btnTomarFoto');
     
-    // Botón para seleccionar archivo
-    btnSeleccionarArchivo.addEventListener('click', function() {
-        imagenProducto.click();
-    });
+    // Verificar que los botones existen
+    if (!btnSeleccionarArchivo || !btnTomarFoto) {
+        console.error('Botones de imagen no encontrados');
+        return;
+    }
     
-    // Botón para tomar foto
-    btnTomarFoto.addEventListener('click', function() {
+    console.log('Configurando botones de imagen:', btnSeleccionarArchivo, btnTomarFoto);
+    
+    // Función para seleccionar archivo
+    function handleSeleccionarArchivo(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        imagenProducto.click();
+    }
+    
+    // Función para tomar foto
+    function handleTomarFoto(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             // Acceder directamente a la cámara
             navigator.mediaDevices.getUserMedia({ 
@@ -380,7 +393,53 @@ function configurarManejoImagenes() {
             // Fallback: abrir selector de archivos
             imagenProducto.click();
         }
-    });
+    }
+    
+    // Event listeners para seleccionar archivo
+    btnSeleccionarArchivo.addEventListener('click', handleSeleccionarArchivo);
+    btnSeleccionarArchivo.addEventListener('touchend', handleSeleccionarArchivo, { passive: false });
+    btnSeleccionarArchivo.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        btnSeleccionarArchivo.style.transform = 'scale(0.95)';
+        btnSeleccionarArchivo.style.opacity = '0.8';
+    }, { passive: false });
+    
+    // Restaurar estado visual después del touch
+    btnSeleccionarArchivo.addEventListener('touchend', function(e) {
+        setTimeout(() => {
+            btnSeleccionarArchivo.style.transform = 'scale(1)';
+            btnSeleccionarArchivo.style.opacity = '1';
+        }, 150);
+    }, { passive: true });
+    
+    // Event listeners para tomar foto
+    btnTomarFoto.addEventListener('click', handleTomarFoto);
+    btnTomarFoto.addEventListener('touchend', handleTomarFoto, { passive: false });
+    btnTomarFoto.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        btnTomarFoto.style.transform = 'scale(0.95)';
+        btnTomarFoto.style.opacity = '0.8';
+    }, { passive: false });
+    
+    // Restaurar estado visual después del touch
+    btnTomarFoto.addEventListener('touchend', function(e) {
+        setTimeout(() => {
+            btnTomarFoto.style.transform = 'scale(1)';
+            btnTomarFoto.style.opacity = '1';
+        }, 150);
+    }, { passive: true });
+    
+    // Event listeners adicionales para móvil
+    btnSeleccionarArchivo.addEventListener('touchstart', function(e) {
+        console.log('Touch start en seleccionar archivo');
+    }, { passive: true });
+    
+    btnTomarFoto.addEventListener('touchstart', function(e) {
+        console.log('Touch start en tomar foto');
+    }, { passive: true });
+    
+    // Verificar que los event listeners se agregaron
+    console.log('Event listeners agregados a los botones de imagen');
     
     // Manejar selección de imagen
     imagenProducto.addEventListener('change', function(e) {
