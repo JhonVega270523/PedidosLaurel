@@ -102,9 +102,12 @@ function init() {
 
 // Configurar event listeners
 function configurarEventListeners() {
-    // Filtros
+    // Filtros - Mejorar compatibilidad móvil
     filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
+        // Event listener principal
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Click en filtro:', button.id); // Debug
             if (button.id === 'btnNuevoPedido') {
                 console.log('Abriendo modal nuevo pedido'); // Debug
@@ -117,28 +120,50 @@ function configurarEventListeners() {
             filtroActual = button.dataset.filter;
             renderPedidos();
         });
-    });
-    
-    // Event listener adicional para el botón de nuevo pedido (móvil)
-    const btnNuevoPedido = document.getElementById('btnNuevoPedido');
-    if (btnNuevoPedido) {
-        btnNuevoPedido.addEventListener('touchend', (e) => {
-            console.log('Touch end en botón nuevo pedido'); // Debug
+        
+        // Event listener táctil para móvil
+        button.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            abrirModalNuevoPedido();
+            console.log('Touch end en filtro:', button.id); // Debug
+            if (button.id === 'btnNuevoPedido') {
+                console.log('Touch end - Abriendo modal nuevo pedido'); // Debug
+                abrirModalNuevoPedido();
+                return;
+            }
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            filtroActual = button.dataset.filter;
+            renderPedidos();
         }, { passive: false });
-    }
+    });
 
-    // Cerrar modal
-    closeModal.addEventListener('click', () => {
+    // Cerrar modal - Mejorar compatibilidad móvil
+    closeModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         pedidoModal.style.display = 'none';
     });
+    
+    closeModal.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        pedidoModal.style.display = 'none';
+    }, { passive: false });
 
-    // Cerrar modal de detalles
-    closeDetalles.addEventListener('click', () => {
+    // Cerrar modal de detalles - Mejorar compatibilidad móvil
+    closeDetalles.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         detallesModal.style.display = 'none';
     });
+    
+    closeDetalles.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        detallesModal.style.display = 'none';
+    }, { passive: false });
 
     // Guardar pedido - con soporte mejorado para Chrome móvil
     pedidoForm.addEventListener('submit', (e) => {
@@ -168,20 +193,38 @@ function configurarEventListeners() {
         }, { passive: false });
     }
 
-    // Búsqueda
+    // Búsqueda - Mejorar compatibilidad móvil
     searchInput.addEventListener('input', (e) => {
         terminoBusqueda = e.target.value.toLowerCase().trim();
         clearSearch.style.display = terminoBusqueda ? 'block' : 'none';
         renderPedidos();
     });
+    
+    // Event listener adicional para búsqueda en móvil
+    searchInput.addEventListener('keyup', (e) => {
+        terminoBusqueda = e.target.value.toLowerCase().trim();
+        clearSearch.style.display = terminoBusqueda ? 'block' : 'none';
+        renderPedidos();
+    });
 
-    // Limpiar búsqueda
-    clearSearch.addEventListener('click', () => {
+    // Limpiar búsqueda - Mejorar compatibilidad móvil
+    clearSearch.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         searchInput.value = '';
         terminoBusqueda = '';
         clearSearch.style.display = 'none';
         renderPedidos();
     });
+    
+    clearSearch.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInput.value = '';
+        terminoBusqueda = '';
+        clearSearch.style.display = 'none';
+        renderPedidos();
+    }, { passive: false });
 
     // Mostrar/ocultar campo de abono según estado de pago
     estadoPagoSelect.addEventListener('change', (e) => {
@@ -195,17 +238,36 @@ function configurarEventListeners() {
         }
     });
 
-    // Event listeners para el modal de confirmación de eliminación
-    cancelarEliminar.addEventListener('click', () => {
+    // Event listeners para el modal de confirmación de eliminación - Mejorar compatibilidad móvil
+    cancelarEliminar.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         confirmarEliminarModal.style.display = 'none';
         pedidoAEliminar = null;
     });
+    
+    cancelarEliminar.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        confirmarEliminarModal.style.display = 'none';
+        pedidoAEliminar = null;
+    }, { passive: false });
 
-    confirmarEliminar.addEventListener('click', () => {
+    confirmarEliminar.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (pedidoAEliminar) {
             eliminarPedidoConfirmado(pedidoAEliminar);
         }
     });
+    
+    confirmarEliminar.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (pedidoAEliminar) {
+            eliminarPedidoConfirmado(pedidoAEliminar);
+        }
+    }, { passive: false });
 
     // Cerrar modal al hacer clic fuera
     window.addEventListener('click', (e) => {
@@ -374,7 +436,7 @@ function renderPedidos() {
         pedidosGrid.appendChild(pedidoCard);
     });
 
-    // Agregar event listeners con soporte mejorado para Chrome móvil
+    // Agregar event listeners con soporte mejorado para móvil
     document.querySelectorAll('.btn-editar').forEach(button => {
         // Event listener principal
         button.addEventListener('click', (e) => {
@@ -385,13 +447,25 @@ function renderPedidos() {
             abrirModalEditarPedido(id);
         });
         
-        // Event listener específico para touch en Chrome móvil
+        // Event listener táctil para móvil
         button.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const id = parseInt(button.dataset.id);
             console.log('Touch end - Editando pedido:', id);
             abrirModalEditarPedido(id);
+        }, { passive: false });
+        
+        // Event listener adicional para touchstart (mejor respuesta táctil)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
         }, { passive: false });
     });
 
@@ -405,13 +479,25 @@ function renderPedidos() {
             eliminarPedido(id);
         });
         
-        // Event listener específico para touch en Chrome móvil
+        // Event listener táctil para móvil
         button.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const id = parseInt(button.dataset.id);
             console.log('Touch end - Eliminando pedido:', id);
             eliminarPedido(id);
+        }, { passive: false });
+        
+        // Event listener adicional para touchstart (mejor respuesta táctil)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
         }, { passive: false });
     });
 
@@ -425,13 +511,25 @@ function renderPedidos() {
             mostrarDetallesPedido(id);
         });
         
-        // Event listener específico para touch en Chrome móvil
+        // Event listener táctil para móvil
         button.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const id = parseInt(button.dataset.id);
             console.log('Touch end - Viendo detalles del pedido:', id);
             mostrarDetallesPedido(id);
+        }, { passive: false });
+        
+        // Event listener adicional para touchstart (mejor respuesta táctil)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
         }, { passive: false });
     });
 
@@ -445,13 +543,25 @@ function renderPedidos() {
             cambiarEstadoPedido(id);
         });
         
-        // Event listener específico para touch en Chrome móvil
+        // Event listener táctil para móvil
         button.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const id = parseInt(button.dataset.id);
             console.log('Touch end - Cambiando estado del pedido:', id);
             cambiarEstadoPedido(id);
+        }, { passive: false });
+        
+        // Event listener adicional para touchstart (mejor respuesta táctil)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
         }, { passive: false });
     });
 }
@@ -985,8 +1095,10 @@ function initScrollToTop() {
         modalContent.addEventListener('scroll', updateButtonVisibility);
     });
     
-    // Manejar el clic del botón
-    scrollToTopBtn.addEventListener('click', () => {
+    // Manejar el clic del botón - Mejorar compatibilidad móvil
+    scrollToTopBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const openModal = isModalOpen();
         
         if (openModal) {
@@ -1006,6 +1118,30 @@ function initScrollToTop() {
             });
         }
     });
+    
+    // Event listener táctil para móvil
+    scrollToTopBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const openModal = isModalOpen();
+        
+        if (openModal) {
+            // Si hay un modal abierto, hacer scroll del modal
+            const modalContent = openModal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        } else {
+            // Si no hay modal, hacer scroll de la página
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }, { passive: false });
 }
 
 // Función para detectar Chrome móvil
@@ -1042,6 +1178,31 @@ function setupChromeMobileCompatibility() {
                 e.preventDefault();
             }
         }, { passive: false });
+    }
+    
+    // Aplicar mejoras para todos los dispositivos móviles
+    if ('ontouchstart' in window) {
+        console.log('Dispositivo táctil detectado, aplicando mejoras de compatibilidad');
+        
+        // Mejorar el manejo de formularios en móvil
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                // Enfocar el input cuando se toca
+                setTimeout(() => {
+                    e.target.focus();
+                }, 100);
+            }
+        }, { passive: true });
+        
+        // Prevenir zoom en doble toque en toda la aplicación
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
     }
 }
 

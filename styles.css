@@ -44,12 +44,22 @@ button, .btn, .filter-btn, .clear-search, .close {
         transform: scale(0.99);
     }
     
-    /* Mejorar respuesta táctil para botón de cambiar estado */
-    .btn-cambiar-estado {
+    /* Mejorar respuesta táctil para todos los botones */
+    .btn, .btn-primary, .btn-secondary, .btn-danger, .btn-info, .btn-cambiar-estado {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
         touch-action: manipulation;
         user-select: none;
         -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        cursor: pointer;
+        transition: all 0.1s ease;
+    }
+    
+    .btn:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active, .btn-info:active {
+        transform: scale(0.95) !important;
     }
     
     .btn-cambiar-estado:active {
@@ -57,30 +67,53 @@ button, .btn, .filter-btn, .clear-search, .close {
         background-color: #c0392b !important;
     }
     
-    /* Estilos específicos para Chrome móvil */
-    .btn, .btn-primary, .btn-secondary, .btn-danger, .btn-info {
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-        touch-action: manipulation;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        cursor: pointer;
-    }
-    
-    /* Mejorar área de toque para botones en Chrome móvil */
+    /* Mejorar área de toque para botones */
     .btn {
         min-height: 44px;
         min-width: 44px;
     }
     
-    /* Botón de guardar pedido específico para Chrome móvil */
+    /* Botón de guardar pedido específico */
     .btn-primary[type="submit"] {
         min-height: 48px;
         min-width: 120px;
         -webkit-tap-highlight-color: rgba(255, 192, 203, 0.3);
+    }
+    
+    /* Mejorar respuesta táctil para filtros */
+    .filter-btn {
+        -webkit-tap-highlight-color: rgba(255, 192, 203, 0.3);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    
+    .filter-btn:active {
+        transform: scale(0.98) !important;
+    }
+    
+    /* Mejorar respuesta táctil para botones de cerrar modal */
+    .close {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    
+    .close:active {
+        transform: scale(0.95) !important;
+    }
+    
+    /* Mejorar respuesta táctil para botón de limpiar búsqueda */
+    .clear-search {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    
+    .clear-search:active {
+        transform: scale(0.95) !important;
     }
 }
 
@@ -1387,6 +1420,10 @@ header {
     visibility: hidden;
     transform: translateY(20px);
     z-index: 1000;
+    -webkit-tap-highlight-color: rgba(255, 192, 203, 0.3);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .scroll-to-top.show {
@@ -1402,7 +1439,15 @@ header {
 }
 
 .scroll-to-top:active {
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(0.95);
+}
+
+/* Mejorar respuesta táctil para scroll to top en móvil */
+@media (hover: none) and (pointer: coarse) {
+    .scroll-to-top:active {
+        transform: translateY(-1px) scale(0.9) !important;
+        background-color: #e04a9e !important;
+    }
 }
 
 /* Pantallas muy pequeñas */
