@@ -86,6 +86,11 @@ const montoAbonoInput = document.getElementById('montoAbono');
 const confirmarEliminarModal = document.getElementById('confirmarEliminarModal');
 const cancelarEliminar = document.getElementById('cancelarEliminar');
 const confirmarEliminar = document.getElementById('confirmarEliminar');
+const domiciliarioModal = document.getElementById('domiciliarioModal');
+const domiciliarioTitulo = document.getElementById('domiciliarioTitulo');
+const domiciliarioContenido = document.getElementById('domiciliarioContenido');
+const closeDomiciliario = document.getElementById('closeDomiciliario');
+const copiarInfo = document.getElementById('copiarInfo');
 
 // Filtro actual y término de búsqueda
 let filtroActual = 'todos';
@@ -165,6 +170,19 @@ function configurarEventListeners() {
         detallesModal.style.display = 'none';
     }, { passive: false });
 
+    // Cerrar modal de domiciliario - Mejorar compatibilidad móvil
+    closeDomiciliario.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        domiciliarioModal.style.display = 'none';
+    });
+    
+    closeDomiciliario.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        domiciliarioModal.style.display = 'none';
+    }, { passive: false });
+
     // Guardar pedido - con soporte mejorado para Chrome móvil
     pedidoForm.addEventListener('submit', (e) => {
         console.log('Evento submit detectado en formulario');
@@ -197,6 +215,7 @@ function configurarEventListeners() {
     searchInput.addEventListener('input', (e) => {
         terminoBusqueda = e.target.value.toLowerCase().trim();
         clearSearch.style.display = terminoBusqueda ? 'block' : 'none';
+        actualizarContadores(); // Actualizar contadores según búsqueda
         renderPedidos();
     });
     
@@ -204,6 +223,7 @@ function configurarEventListeners() {
     searchInput.addEventListener('keyup', (e) => {
         terminoBusqueda = e.target.value.toLowerCase().trim();
         clearSearch.style.display = terminoBusqueda ? 'block' : 'none';
+        actualizarContadores(); // Actualizar contadores según búsqueda
         renderPedidos();
     });
 
@@ -214,6 +234,7 @@ function configurarEventListeners() {
         searchInput.value = '';
         terminoBusqueda = '';
         clearSearch.style.display = 'none';
+        actualizarContadores(); // Actualizar contadores al limpiar búsqueda
         renderPedidos();
     });
     
@@ -223,6 +244,7 @@ function configurarEventListeners() {
         searchInput.value = '';
         terminoBusqueda = '';
         clearSearch.style.display = 'none';
+        actualizarContadores(); // Actualizar contadores al limpiar búsqueda
         renderPedidos();
     }, { passive: false });
 
@@ -269,8 +291,9 @@ function configurarEventListeners() {
         }
     }, { passive: false });
 
-    // Cerrar modal al hacer clic fuera
+    // Cerrar modal al hacer clic fuera - Mejorar para evitar cierre accidental
     window.addEventListener('click', (e) => {
+        // Solo cerrar si el clic es directamente en el fondo del modal, no en sus hijos
         if (e.target === pedidoModal) {
             pedidoModal.style.display = 'none';
         }
@@ -281,7 +304,40 @@ function configurarEventListeners() {
             confirmarEliminarModal.style.display = 'none';
             pedidoAEliminar = null;
         }
+        if (e.target === domiciliarioModal) {
+            domiciliarioModal.style.display = 'none';
+        }
     });
+    
+    // Prevenir que los clics dentro del contenido del modal se propaguen y cierren el modal
+    // Solo prevenir propagación en el contenido, no en el fondo del modal
+    const pedidoModalContent = pedidoModal.querySelector('.modal-content');
+    if (pedidoModalContent) {
+        pedidoModalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    const detallesModalContent = detallesModal.querySelector('.modal-content');
+    if (detallesModalContent) {
+        detallesModalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    const confirmarModalContent = confirmarEliminarModal.querySelector('.modal-content');
+    if (confirmarModalContent) {
+        confirmarModalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    const domiciliarioModalContent = domiciliarioModal.querySelector('.modal-content');
+    if (domiciliarioModalContent) {
+        domiciliarioModalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
     
     // Delegación de eventos eliminada - usando solo onclick directo
     console.log('Usando onclick directo para todos los botones');
@@ -289,9 +345,18 @@ function configurarEventListeners() {
 
 // Actualizar contadores de pedidos
 function actualizarContadores() {
-    const total = pedidos.length;
-    const pendientes = pedidos.filter(p => p.estado === 'pendiente').length;
-    const entregados = pedidos.filter(p => p.estado === 'entregado').length;
+    let pedidosParaContar = pedidos;
+    
+    // Si hay un término de búsqueda, filtrar los pedidos antes de contar
+    if (terminoBusqueda) {
+        pedidosParaContar = pedidos.filter(pedido => 
+            buscarEnPedido(pedido, terminoBusqueda)
+        );
+    }
+    
+    const total = pedidosParaContar.length;
+    const pendientes = pedidosParaContar.filter(p => p.estado === 'pendiente').length;
+    const entregados = pedidosParaContar.filter(p => p.estado === 'entregado').length;
 
     countTodos.textContent = total;
     countPendiente.textContent = pendientes;
@@ -423,6 +488,9 @@ function renderPedidos() {
                 </button>
                 <button class="btn btn-secondary btn-editar" data-id="${pedido.id}">
                     <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-warning btn-domiciliario" data-id="${pedido.id}" title="Ver información para domiciliario">
+                    <i class="fas fa-truck"></i>
                 </button>
                 <button class="btn btn-primary btn-cambiar-estado" data-id="${pedido.id}">
                     <i class="fas fa-exchange-alt"></i>
@@ -564,6 +632,38 @@ function renderPedidos() {
             button.style.opacity = '1';
         }, { passive: false });
     });
+
+    document.querySelectorAll('.btn-domiciliario').forEach(button => {
+        // Event listener principal
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Mostrando información para domiciliario:', id);
+            mostrarInfoDomiciliario(id);
+        });
+        
+        // Event listener táctil para móvil
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = parseInt(button.dataset.id);
+            console.log('Touch end - Mostrando información para domiciliario:', id);
+            mostrarInfoDomiciliario(id);
+        }, { passive: false });
+        
+        // Event listener adicional para touchstart (mejor respuesta táctil)
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+        }, { passive: false });
+        
+        button.addEventListener('touchend', (e) => {
+            button.style.transform = 'scale(1)';
+            button.style.opacity = '1';
+        }, { passive: false });
+    });
 }
 
 // Obtener texto del estado
@@ -604,12 +704,138 @@ function formatFecha(fecha) {
     });
 }
 
+// Formatear solo la hora en formato 12 horas
+function formatHora(fecha) {
+    return fecha.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+// Mostrar notificación personalizada
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    // Crear el contenedor de notificaciones si no existe
+    let notificacionesContainer = document.getElementById('notificacionesContainer');
+    if (!notificacionesContainer) {
+        notificacionesContainer = document.createElement('div');
+        notificacionesContainer.id = 'notificacionesContainer';
+        notificacionesContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(notificacionesContainer);
+    }
+    
+    // Crear la notificación
+    const notificacion = document.createElement('div');
+    notificacion.className = `notificacion notificacion-${tipo}`;
+    notificacion.style.cssText = `
+        background-color: ${tipo === 'success' ? '#27ae60' : tipo === 'error' ? '#e74c3c' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 300px;
+        max-width: 400px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+    `;
+    
+    // Agregar icono según el tipo
+    const icono = document.createElement('i');
+    icono.className = tipo === 'success' ? 'fas fa-check-circle' : 
+                     tipo === 'error' ? 'fas fa-exclamation-circle' : 
+                     'fas fa-info-circle';
+    icono.style.fontSize = '18px';
+    
+    // Agregar mensaje
+    const mensajeElement = document.createElement('span');
+    mensajeElement.textContent = mensaje;
+    mensajeElement.style.flex = '1';
+    
+    // Agregar botón de cerrar
+    const cerrarBtn = document.createElement('button');
+    cerrarBtn.innerHTML = '×';
+    cerrarBtn.style.cssText = `
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    `;
+    
+    cerrarBtn.addEventListener('click', () => {
+        notificacion.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notificacion.parentNode) {
+                notificacion.parentNode.removeChild(notificacion);
+            }
+        }, 300);
+    });
+    
+    // Agregar elementos a la notificación
+    notificacion.appendChild(icono);
+    notificacion.appendChild(mensajeElement);
+    notificacion.appendChild(cerrarBtn);
+    
+    // Agregar a la página
+    notificacionesContainer.appendChild(notificacion);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notificacion.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Auto-eliminar después de 3 segundos
+    setTimeout(() => {
+        if (notificacion.parentNode) {
+            notificacion.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notificacion.parentNode) {
+                    notificacion.parentNode.removeChild(notificacion);
+                }
+            }, 300);
+        }
+    }, 3000);
+}
+
 // Abrir modal para nuevo pedido
 function abrirModalNuevoPedido() {
     modalTitulo.textContent = 'Nuevo Pedido';
     pedidoForm.reset();
     document.getElementById('pedidoId').value = '';
-    document.getElementById('fechaEntrega').value = '';
+    
+    // Establecer fecha y hora actual como valor por defecto
+    const ahora = new Date();
+    const year = ahora.getFullYear();
+    const month = String(ahora.getMonth() + 1).padStart(2, '0');
+    const day = String(ahora.getDate()).padStart(2, '0');
+    const hours = String(ahora.getHours()).padStart(2, '0');
+    const minutes = String(ahora.getMinutes()).padStart(2, '0');
+    
+    const fechaActual = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('fechaEntrega').value = fechaActual;
+    
     document.getElementById('estadoPago').value = 'pendiente';
     document.getElementById('montoAbono').value = '0';
     abonoGroup.style.display = 'none';
@@ -657,9 +883,16 @@ function abrirModalEditarPedido(id) {
         montoAbonoInput.required = false;
     }
     
-    // Formatear la fecha para el input datetime-local
+    // Formatear la fecha para el input datetime-local (mantener zona horaria local)
     const fecha = new Date(pedido.fechaEntrega);
-    const fechaFormateada = fecha.toISOString().slice(0, 16);
+    // Crear la fecha en formato local para el input datetime-local
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const hours = String(fecha.getHours()).padStart(2, '0');
+    const minutes = String(fecha.getMinutes()).padStart(2, '0');
+    
+    const fechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
     document.getElementById('fechaEntrega').value = fechaFormateada;
     
     pedidoModal.style.display = 'flex';
@@ -730,7 +963,7 @@ function guardarPedido(e) {
     pedidoModal.style.display = 'none';
     
     // Mostrar mensaje de éxito
-    alert(`Pedido ${esEdicion ? 'actualizado' : 'creado'} correctamente.`);
+    mostrarNotificacion(`Pedido ${esEdicion ? 'actualizado' : 'creado'} correctamente.`, 'success');
 }
 
 // Las funciones están disponibles localmente, no necesitamos hacerlas globales
@@ -825,7 +1058,7 @@ function eliminarPedidoConfirmado(id) {
     pedidoAEliminar = null;
     
     // Mostrar mensaje de éxito
-    alert(`Pedido #${id} eliminado correctamente.`);
+    mostrarNotificacion(`Pedido #${id} eliminado correctamente.`, 'success');
 }
 
 // Mostrar detalles del pedido
@@ -987,6 +1220,230 @@ function mostrarDetallesPedido(id) {
     }, 10);
 }
 
+// Mostrar información para domiciliario
+function mostrarInfoDomiciliario(id) {
+    const pedido = pedidos.find(p => p.id === id);
+    if (!pedido) return;
+
+    domiciliarioTitulo.textContent = `Información para Domiciliario - Pedido #${pedido.id}`;
+    
+    const fechaEntrega = new Date(pedido.fechaEntrega);
+    
+    domiciliarioContenido.innerHTML = `
+        <div class="domiciliario-card">
+            <!-- Columna izquierda: Destinatario y Dirección -->
+            <div class="domiciliario-section">
+                <h3>DESTINATARIO</h3>
+                <div class="domiciliario-info">
+                    <div class="info-item">
+                        <label>Nombre:</label>
+                        <span>${pedido.destinatarioNombre}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Teléfono:</label>
+                        <span>${pedido.destinatarioTelefono}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="domiciliario-section">
+                <h3>DIRECCIÓN</h3>
+                <div class="domiciliario-info">
+                    <div class="info-item">
+                        <label>Dirección:</label>
+                        <span>${pedido.direccion}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Barrio:</label>
+                        <span>${pedido.barrio}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Referencia:</label>
+                        <span>${pedido.referencia || 'No especificada'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Maps:</label>
+                        <a href="${generarURLGoogleMaps(pedido.direccion, pedido.barrio)}" 
+                           target="_blank">
+                            Abrir en Google Maps
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Producto y Entrega -->
+            <div class="domiciliario-section">
+                <h3>PRODUCTO</h3>
+                <div class="domiciliario-info">
+                    <div class="info-item">
+                        <label>Producto:</label>
+                        <span>${pedido.producto}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Características:</label>
+                        <span>${pedido.caracteristicas || 'No especificadas'}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Ocasión:</label>
+                        <span>${pedido.ocasion || 'No especificada'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="domiciliario-section">
+                <h3>ENTREGA</h3>
+                <div class="domiciliario-info">
+                    <div class="info-item">
+                        <label>Fecha:</label>
+                        <span>${fechaEntrega.toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        })}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Hora:</label>
+                        <span>${formatHora(fechaEntrega)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    domiciliarioModal.style.display = 'flex';
+    
+    // Hacer scroll al top del modal
+    setTimeout(() => {
+        const modalContent = document.querySelector('#domiciliarioModal .modal-content');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
+        }
+    }, 10);
+}
+
+// Configurar botones del modal de domiciliario
+function configurarBotonesDomiciliario() {
+    
+    // Botón copiar
+    copiarInfo.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        copiarInfoDomiciliario();
+    });
+    
+    copiarInfo.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        copiarInfoDomiciliario();
+    }, { passive: false });
+}
+
+
+// Copiar información de domiciliario
+function copiarInfoDomiciliario() {
+    // Crear el contenido formateado como se ve en el modal
+    const pedido = pedidos.find(p => p.id === parseInt(domiciliarioTitulo.textContent.match(/#(\d+)/)[1]));
+    if (!pedido) return;
+    
+    const fechaEntrega = new Date(pedido.fechaEntrega);
+    const mapsURL = generarURLGoogleMaps(pedido.direccion, pedido.barrio);
+    
+    // Formato optimizado para WhatsApp - incluye la URL directamente
+    const contenidoFormateado = `
+*INFORMACIÓN PARA DOMICILIARIO - PEDIDO #${pedido.id}*
+
+*DESTINATARIO*
+Nombre: ${pedido.destinatarioNombre}
+Teléfono: ${pedido.destinatarioTelefono}
+
+*DIRECCIÓN*
+Dirección: ${pedido.direccion}
+Barrio: ${pedido.barrio}
+Referencia: ${pedido.referencia || 'No especificada'}
+Maps: ${mapsURL}
+
+*PRODUCTO*
+Producto: ${pedido.producto}
+Características: ${pedido.caracteristicas || 'No especificadas'}
+Ocasión: ${pedido.ocasion || 'No especificada'}
+
+*ENTREGA*
+Fecha: ${fechaEntrega.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    })}
+Hora: ${formatHora(fechaEntrega)}
+    `.trim();
+    
+    // Crear contenido HTML con enlace funcional para otras aplicaciones
+    const contenidoHTML = `
+*INFORMACIÓN PARA DOMICILIARIO - PEDIDO #${pedido.id}*
+
+*DESTINATARIO*
+Nombre: ${pedido.destinatarioNombre}
+Teléfono: ${pedido.destinatarioTelefono}
+
+*DIRECCIÓN*
+Dirección: ${pedido.direccion}
+Barrio: ${pedido.barrio}
+Referencia: ${pedido.referencia || 'No especificada'}
+Maps: <a href="${mapsURL}">Abrir en Google Maps</a>
+
+*PRODUCTO*
+Producto: ${pedido.producto}
+Características: ${pedido.caracteristicas || 'No especificadas'}
+Ocasión: ${pedido.ocasion || 'No especificada'}
+
+*ENTREGA*
+Fecha: ${fechaEntrega.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    })}
+Hora: ${formatHora(fechaEntrega)}
+    `.trim();
+    
+    // Intentar copiar como HTML primero
+    if (navigator.clipboard.write) {
+        const clipboardItem = new ClipboardItem({
+            'text/plain': new Blob([contenidoFormateado], { type: 'text/plain' }),
+            'text/html': new Blob([contenidoHTML], { type: 'text/html' })
+        });
+        
+        navigator.clipboard.write([clipboardItem]).then(() => {
+            mostrarNotificacion('Información copiada al portapapeles', 'success');
+        }).catch(() => {
+            // Fallback a texto plano
+            navigator.clipboard.writeText(contenidoFormateado).then(() => {
+                mostrarNotificacion('Información copiada al portapapeles', 'success');
+            }).catch(() => {
+                // Fallback final
+                const textArea = document.createElement('textarea');
+                textArea.value = contenidoFormateado;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                mostrarNotificacion('Información copiada al portapapeles', 'success');
+            });
+        });
+    } else {
+        // Fallback para navegadores que no soportan ClipboardItem
+        navigator.clipboard.writeText(contenidoFormateado).then(() => {
+            mostrarNotificacion('Información copiada al portapapeles', 'success');
+        }).catch(() => {
+            const textArea = document.createElement('textarea');
+            textArea.value = contenidoFormateado;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            mostrarNotificacion('Información copiada al portapapeles', 'success');
+        });
+    }
+}
+
 // Verificar alertas de entrega próxima
 function verificarAlertas() {
     alertasLista.innerHTML = '';
@@ -1010,14 +1467,14 @@ function verificarAlertas() {
                 // Entrega en menos de 24 horas
                 alertas.push({
                     tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatFecha(fechaEntrega).split(' ')[1]}`,
+                    mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatHora(fechaEntrega)}`,
                     pedidoId: pedido.id
                 });
             } else if (diffHoras < 48) {
                 // Entrega en menos de 48 horas
                 alertas.push({
                     tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse mañana a las ${formatFecha(fechaEntrega).split(' ')[1]}`,
+                    mensaje: `Pedido #${pedido.id} debe entregarse mañana a las ${formatHora(fechaEntrega)}`,
                     pedidoId: pedido.id
                 });
             }
@@ -1178,6 +1635,16 @@ function setupChromeMobileCompatibility() {
                 e.preventDefault();
             }
         }, { passive: false });
+        
+        // Mejorar el manejo de eventos táctiles en modales
+        document.addEventListener('touchstart', function(e) {
+            // Si el toque es en un input, textarea o select dentro de un modal, no prevenir
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                if (e.target.closest('.modal')) {
+                    return; // Permitir selección de texto en campos de modal
+                }
+            }
+        }, { passive: true });
     }
     
     // Aplicar mejoras para todos los dispositivos móviles
@@ -1216,6 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupChromeMobileCompatibility();
     init();
     initScrollToTop();
+    configurarBotonesDomiciliario();
     
     console.log('Aplicación inicializada correctamente');
 });
