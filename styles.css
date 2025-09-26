@@ -356,7 +356,7 @@ header {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
-    color: #e74c3c;
+    color: var(--dark-pink);
 }
 
 .alerta-item {
