@@ -11,6 +11,7 @@ let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [
         referencia: "Cerca al centro comercial",
         producto: "Ramo de rosas premium",
         caracteristicas: "24 rosas rojas, caja negra, moño dorado",
+        imagenProducto: "",
         precio: 85000,
         estadoPago: "pendiente",
         montoAbono: 0,
@@ -31,6 +32,7 @@ let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [
         referencia: "Frente al parque",
         producto: "Caja de chocolates personalizada",
         caracteristicas: "Chocolates artesanales, caja corazón, tarjeta personalizada",
+        imagenProducto: "",
         precio: 65000,
         estadoPago: "abono",
         montoAbono: 30000,
@@ -51,6 +53,7 @@ let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [
         referencia: "Cerca a la alcaldía",
         producto: "Arreglo de globos y cervezas",
         caracteristicas: "6 cervezas artesanales, globos temáticos, peluche",
+        imagenProducto: "",
         precio: 120000,
         estadoPago: "pagado",
         montoAbono: 120000,
@@ -91,6 +94,13 @@ const domiciliarioTitulo = document.getElementById('domiciliarioTitulo');
 const domiciliarioContenido = document.getElementById('domiciliarioContenido');
 const closeDomiciliario = document.getElementById('closeDomiciliario');
 const copiarInfo = document.getElementById('copiarInfo');
+const imagenProducto = document.getElementById('imagenProducto');
+const previewImagen = document.getElementById('previewImagen');
+const previewImg = document.getElementById('previewImg');
+const eliminarImagen = document.getElementById('eliminarImagen');
+const modalImagen = document.getElementById('modalImagen');
+const imagenGrande = document.getElementById('imagenGrande');
+const closeImagen = document.getElementById('closeImagen');
 
 // Filtro actual y término de búsqueda
 let filtroActual = 'todos';
@@ -334,6 +344,62 @@ function configurarEventListeners() {
     
     // Delegación de eventos eliminada - usando solo onclick directo
     console.log('Usando onclick directo para todos los botones');
+    
+    // Configurar manejo de imágenes
+    configurarManejoImagenes();
+}
+
+// Configurar manejo de imágenes
+function configurarManejoImagenes() {
+    // Manejar selección de imagen
+    imagenProducto.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImagen.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Manejar eliminación de imagen
+    eliminarImagen.addEventListener('click', function(e) {
+        e.preventDefault();
+        imagenProducto.value = '';
+        previewImagen.style.display = 'none';
+        previewImg.src = '';
+    });
+    
+    // Manejar cierre del modal de imagen
+    closeImagen.addEventListener('click', function(e) {
+        e.preventDefault();
+        modalImagen.style.display = 'none';
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    modalImagen.addEventListener('click', function(e) {
+        if (e.target === modalImagen) {
+            modalImagen.style.display = 'none';
+        }
+    });
+}
+
+// Función para mostrar imagen en grande
+function mostrarImagenGrande(src) {
+    imagenGrande.src = src;
+    modalImagen.style.display = 'flex';
+}
+
+// Función para convertir imagen a base64
+function imagenABase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
 }
 
 // Actualizar contadores de pedidos
@@ -463,6 +529,11 @@ function renderPedidos() {
                     <label>Producto</label>
                     <span>${pedido.producto} - $${pedido.precio.toLocaleString()}</span>
                 </div>
+                ${pedido.imagenProducto ? `
+                <div class="card-imagen">
+                    <img src="${pedido.imagenProducto}" alt="Imagen del producto" onclick="mostrarImagenGrande('${pedido.imagenProducto}')">
+                </div>
+                ` : ''}
                 <div class="card-field">
                     <label>Estado de Pago</label>
                     <span class="pago-status ${pedido.estadoPago}">
@@ -833,6 +904,12 @@ function abrirModalNuevoPedido() {
     document.getElementById('montoAbono').value = '0';
     abonoGroup.style.display = 'none';
     montoAbonoInput.required = false;
+    
+    // Limpiar imagen
+    imagenProducto.value = '';
+    previewImagen.style.display = 'none';
+    previewImg.src = '';
+    
     pedidoModal.style.display = 'flex';
     
     // Hacer scroll al top del modal
@@ -888,6 +965,18 @@ function abrirModalEditarPedido(id) {
     const fechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
     document.getElementById('fechaEntrega').value = fechaFormateada;
     
+    // Manejar imagen existente
+    if (pedido.imagenProducto) {
+        previewImg.src = pedido.imagenProducto;
+        previewImagen.style.display = 'block';
+    } else {
+        previewImagen.style.display = 'none';
+        previewImg.src = '';
+    }
+    
+    // Limpiar el input de archivo
+    imagenProducto.value = '';
+    
     pedidoModal.style.display = 'flex';
     
     // Hacer scroll al top del modal
@@ -900,12 +989,29 @@ function abrirModalEditarPedido(id) {
 }
 
 // Guardar pedido (nuevo o editado)
-function guardarPedido(e) {
+async function guardarPedido(e) {
     console.log('Función guardarPedido llamada');
     e.preventDefault();
     
     const id = document.getElementById('pedidoId').value;
     const esEdicion = id !== '';
+    
+    // Manejar imagen
+    let imagenBase64 = '';
+    const fileInput = document.getElementById('imagenProducto');
+    if (fileInput.files[0]) {
+        try {
+            imagenBase64 = await imagenABase64(fileInput.files[0]);
+        } catch (error) {
+            console.error('Error al procesar imagen:', error);
+            mostrarNotificacion('Error al procesar la imagen', 'error');
+            return;
+        }
+    } else if (esEdicion) {
+        // Si es edición y no hay nueva imagen, mantener la imagen existente
+        const pedidoExistente = pedidos.find(p => p.id === parseInt(id));
+        imagenBase64 = pedidoExistente?.imagenProducto || '';
+    }
     
     const pedido = {
         clienteNombre: document.getElementById('clienteNombre').value,
@@ -917,6 +1023,7 @@ function guardarPedido(e) {
         referencia: document.getElementById('referencia').value,
         producto: document.getElementById('producto').value,
         caracteristicas: document.getElementById('caracteristicas').value,
+        imagenProducto: imagenBase64,
         precio: parseFloat(document.getElementById('precio').value),
         estadoPago: document.getElementById('estadoPago').value,
         montoAbono: parseFloat(document.getElementById('montoAbono').value) || 0,
@@ -1151,6 +1258,11 @@ function mostrarDetallesPedido(id) {
                     <span>${pedido.ocasion || 'No especificada'}</span>
                 </div>
             </div>
+            ${pedido.imagenProducto ? `
+            <div class="imagen-producto">
+                <img src="${pedido.imagenProducto}" alt="Imagen del producto" onclick="mostrarImagenGrande('${pedido.imagenProducto}')">
+            </div>
+            ` : ''}
         </div>
 
         <div class="detalles-section">
@@ -1450,44 +1562,76 @@ function verificarAlertas() {
             const diffHoras = (fechaEntrega - ahora) / (1000 * 60 * 60);
             
             if (diffHoras < 0) {
-                // Pedido atrasado
+                // Pedido atrasado - ROJO
                 alertas.push({
                     tipo: 'crítica',
                     mensaje: `¡Pedido #${pedido.id} está atrasado! Debería haberse entregado el ${formatFecha(fechaEntrega)}`,
                     pedidoId: pedido.id
                 });
-            } else if (diffHoras < 24) {
-                // Entrega en menos de 24 horas
+            } else if (diffHoras < 6) {
+                // Entrega en menos de 6 horas - ROJO
                 alertas.push({
-                    tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatHora(fechaEntrega)}`,
+                    tipo: 'crítica',
+                    mensaje: `¡Pedido #${pedido.id} debe entregarse en ${Math.round(diffHoras)} horas! (${formatHora(fechaEntrega)})`,
                     pedidoId: pedido.id
                 });
-            } else if (diffHoras < 48) {
-                // Entrega en menos de 48 horas
-                alertas.push({
-                    tipo: 'advertencia',
-                    mensaje: `Pedido #${pedido.id} debe entregarse mañana a las ${formatHora(fechaEntrega)}`,
-                    pedidoId: pedido.id
-                });
+            } else if (diffHoras < 72) {
+                // Entrega en 6-72 horas - AMARILLO
+                if (diffHoras < 24) {
+                    alertas.push({
+                        tipo: 'advertencia',
+                        mensaje: `Pedido #${pedido.id} debe entregarse hoy a las ${formatHora(fechaEntrega)}`,
+                        pedidoId: pedido.id
+                    });
+                } else {
+                    alertas.push({
+                        tipo: 'advertencia',
+                        mensaje: `Pedido #${pedido.id} debe entregarse en ${Math.round(diffHoras / 24)} días (${formatHora(fechaEntrega)})`,
+                        pedidoId: pedido.id
+                    });
+                }
             }
+            // No mostrar alertas para pedidos con más de 72 horas
         }
     });
     
     if (alertas.length === 0) {
         alertasLista.innerHTML = `
-            <div class="alerta-item">
+            <div class="alerta-item info">
                 <i class="fas fa-check-circle"></i> No hay alertas en este momento. Todos los pedidos están bajo control.
             </div>
         `;
         return;
     }
     
+    // Determinar el color del contenedor según la urgencia
+    const tieneCriticas = alertas.some(a => a.tipo === 'crítica');
+    
+    let containerClass = 'alertas-container';
+    if (tieneCriticas) {
+        containerClass += ' alertas-criticas';
+    } else {
+        containerClass += ' alertas-advertencia';
+    }
+    
+    // Aplicar clase al contenedor
+    const container = document.querySelector('.alertas-container');
+    container.className = containerClass;
+    
     alertas.forEach(alerta => {
         const alertaElement = document.createElement('div');
         alertaElement.classList.add('alerta-item', alerta.tipo, 'clickeable');
+        
+        // Icono según el tipo de alerta
+        let icono = 'fa-exclamation-circle';
+        if (alerta.tipo === 'crítica') {
+            icono = 'fa-exclamation-triangle';
+        } else if (alerta.tipo === 'advertencia') {
+            icono = 'fa-exclamation-circle';
+        }
+        
         alertaElement.innerHTML = `
-            <i class="fas ${alerta.tipo === 'crítica' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+            <i class="fas ${icono}"></i>
             ${alerta.mensaje}
         `;
         
