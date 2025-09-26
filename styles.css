@@ -1737,6 +1737,160 @@ header {
 }
 
 /* Estilos para subida de imágenes */
+.image-input-container {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+.image-input-container:hover {
+    border-color: var(--dark-pink);
+    background-color: #fef7f7;
+}
+
+.image-input-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-image-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 16px;
+    border: 2px solid var(--dark-pink);
+    background-color: white;
+    color: var(--dark-pink);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-image-input:hover {
+    background-color: var(--dark-pink);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 105, 180, 0.3);
+}
+
+.btn-image-input:active {
+    transform: translateY(0);
+}
+
+.file-input-options {
+    margin-top: 5px;
+}
+
+.file-input-hint {
+    color: #666;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+    justify-content: center;
+}
+
+.file-input-hint i {
+    color: var(--dark-pink);
+}
+
+/* Estilos para el modal de cámara */
+#cameraModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#cameraModal > div {
+    background: white !important;
+    border-radius: 10px !important;
+    padding: 20px !important;
+    max-width: 90% !important;
+    max-height: 90% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+#cameraModal h3 {
+    margin: 0 0 15px 0 !important;
+    color: var(--dark-pink) !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 1.2rem !important;
+}
+
+#cameraVideo {
+    max-width: 100% !important;
+    max-height: 400px !important;
+    border-radius: 8px !important;
+    border: 2px solid #ddd !important;
+}
+
+#cameraModal button {
+    background: var(--dark-pink) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+#cameraModal button:hover {
+    background: #e91e63 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(233, 30, 99, 0.3) !important;
+}
+
+#closeCamera {
+    background: #666 !important;
+}
+
+#closeCamera:hover {
+    background: #555 !important;
+}
+
+/* Responsive para modal de cámara */
+@media (max-width: 768px) {
+    #cameraModal > div {
+        padding: 15px !important;
+        max-width: 95% !important;
+    }
+    
+    #cameraVideo {
+        max-height: 300px !important;
+    }
+    
+    #cameraModal button {
+        padding: 8px 16px !important;
+        font-size: 0.8rem !important;
+    }
+}
+
 .imagen-preview {
     margin-top: 10px;
     text-align: center;
@@ -1874,6 +2028,26 @@ header {
 
 /* Responsive para imágenes */
 @media (max-width: 768px) {
+    .image-input-container {
+        padding: 10px;
+    }
+    
+    .image-input-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-image-input {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .file-input-hint {
+        font-size: 0.8rem;
+        text-align: center;
+        justify-content: center;
+    }
+    
     .imagen-preview {
         padding: 10px;
     }

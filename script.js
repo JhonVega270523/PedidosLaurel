@@ -351,18 +351,147 @@ function configurarEventListeners() {
 
 // Configurar manejo de imágenes
 function configurarManejoImagenes() {
+    const btnSeleccionarArchivo = document.getElementById('btnSeleccionarArchivo');
+    const btnTomarFoto = document.getElementById('btnTomarFoto');
+    
+    // Botón para seleccionar archivo
+    btnSeleccionarArchivo.addEventListener('click', function() {
+        imagenProducto.click();
+    });
+    
+    // Botón para tomar foto
+    btnTomarFoto.addEventListener('click', function() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            // Acceder directamente a la cámara
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment' // Cámara trasera por defecto
+                } 
+            })
+            .then(function(stream) {
+                mostrarCamara(stream);
+            })
+            .catch(function(error) {
+                console.error('Error al acceder a la cámara:', error);
+                alert('No se pudo acceder a la cámara. Por favor, selecciona un archivo desde tu equipo.');
+                imagenProducto.click();
+            });
+        } else {
+            // Fallback: abrir selector de archivos
+            imagenProducto.click();
+        }
+    });
+    
     // Manejar selección de imagen
     imagenProducto.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewImagen.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+            procesarImagen(file);
         }
     });
+    
+    // Función para mostrar la cámara
+    function mostrarCamara(stream) {
+        // Crear modal para la cámara
+        const cameraModal = document.createElement('div');
+        cameraModal.id = 'cameraModal';
+        cameraModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        cameraModal.innerHTML = `
+            <div style="background: white; border-radius: 10px; padding: 20px; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center;">
+                <h3 style="margin: 0 0 15px 0; color: var(--dark-pink);">Tomar Foto del Producto</h3>
+                <video id="cameraVideo" autoplay style="max-width: 100%; max-height: 400px; border-radius: 8px;"></video>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button id="capturePhoto" style="background: var(--dark-pink); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-camera"></i> Capturar
+                    </button>
+                    <button id="closeCamera" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(cameraModal);
+        
+        const video = document.getElementById('cameraVideo');
+        const captureBtn = document.getElementById('capturePhoto');
+        const closeBtn = document.getElementById('closeCamera');
+        
+        // Mostrar el stream de video
+        video.srcObject = stream;
+        
+        // Capturar foto
+        captureBtn.addEventListener('click', function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Convertir a blob y luego a file
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], 'foto-producto.jpg', { type: 'image/jpeg' });
+                procesarImagen(file);
+                
+                // Cerrar modal y detener cámara
+                document.body.removeChild(cameraModal);
+                stream.getTracks().forEach(track => track.stop());
+            }, 'image/jpeg', 0.8);
+        });
+        
+        // Cerrar cámara
+        closeBtn.addEventListener('click', function() {
+            document.body.removeChild(cameraModal);
+            stream.getTracks().forEach(track => track.stop());
+        });
+        
+        // Cerrar con ESC
+        const handleKeyPress = function(e) {
+            if (e.key === 'Escape') {
+                document.body.removeChild(cameraModal);
+                stream.getTracks().forEach(track => track.stop());
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+        };
+        document.addEventListener('keydown', handleKeyPress);
+    }
+    
+    // Función para procesar la imagen
+    function procesarImagen(file) {
+        // Validar que sea una imagen
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor selecciona un archivo de imagen válido.');
+            imagenProducto.value = '';
+            return;
+        }
+        
+        // Validar tamaño (máximo 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('La imagen es demasiado grande. Por favor selecciona una imagen menor a 5MB.');
+            imagenProducto.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewImagen.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
     
     // Manejar eliminación de imagen
     eliminarImagen.addEventListener('click', function(e) {
